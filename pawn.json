@@ -1,0 +1,12 @@
+{
+	"user": "Halosetoe",
+	"repo": "FRP-Project",
+	"entry": "main.pwn",
+	"output": "gamemodes/main.amx",
+	"dependencies": [
+		"sampctl/samp-stdlib"
+	],
+	"runtime": {
+		"mode": "y_testing"
+	}
+}
