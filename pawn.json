@@ -1,16 +1,31 @@
 {
 	"user": "Halosetoe",
 	"repo": "FRP-Project",
-	"entry": "main.pwn",
+	"entry": "modules/main.pwn",
 	"output": "gamemodes/main.amx",
 	"dependencies": [
-		"sampctl/samp-stdlib"
+		"sampctl/samp-stdlib",
+		"maddinat0r/sscanf",
+		"pBlueG/SA-MP-MySQL",
+		"Awsomedude/easyDialog",
+		"urShadow/Pawn.CMD:3.3.3",
+		"Southclaws/pawn-uuid",
+		"bmisiak/samp-precise-timers",
+		"pawn-lang/YSI-Includes@5.x",
+		"IllidanS4/PawnPlus"
 	],
 	"local": true,
 	"runtime": {
 		"version": "0.3.DL",
 		"mode": "server",
 		"echo": "Loading configuration...",
+		"plugins": [
+			"uuid",
+			"mysql",
+			"PawnPlus",
+			"sscanf",
+			"samp-precise-timers"	
+		],
 		"gamemodes": [
 			"main"
 		],
@@ -60,6 +75,10 @@
 			"-v2"
 		],
 		"includes": [
+			"modules/configs",
+			"modules/core/settings",
+			"modules/core/database",
+			"modules/core/account"
 		],
 		"constants": {
 			"MAX_PLAYERS": "100",
