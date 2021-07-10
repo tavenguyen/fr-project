@@ -8,6 +8,7 @@
 		"maddinat0r/sscanf",
 		"pBlueG/SA-MP-MySQL",
 		"Awsomedude/easyDialog",
+		"lassir/bcrypt-samp:v2.2.3",
 		"urShadow/Pawn.CMD:3.3.3",
 		"Southclaws/pawn-uuid",
 		"bmisiak/samp-precise-timers",
@@ -24,6 +25,7 @@
 			"mysql",
 			"PawnPlus",
 			"sscanf",
+			"bcrypt-sampp",
 			"samp-precise-timers"	
 		],
 		"gamemodes": [
