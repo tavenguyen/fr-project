@@ -12,6 +12,7 @@
 #define PP_SYNTAX_FOR_LIST
 #define PP_SYNTAX_FOR_MAP
 
+native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessage;
 //---------------------------------- Libaries ----------------------------------//
 #include <a_samp>
 #include <a_mysql>
@@ -22,8 +23,9 @@
 #include <easyDialog>
 #include <samp-precise-timers>
 #include <easyDialog>
-//---------------------------------- Settings ----------------------------------//
+//---------------------------------- Configs ----------------------------------//
 #include <config-colors>
+#include <config-dialogs-id>
 //---------------------------------- Settings ----------------------------------//
 #include <define>
 #include <varaible>

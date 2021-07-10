@@ -18,11 +18,11 @@ stock Account_ReturnName(playerid, _type = 1)
     return name;
 }
 
-stock KickEx(playerid, const str[])
+stock KickEx(playerid, msg_type, const msg[], time = 500)
 {
-    SendClientMessage(playerid, -1, str);
-    Kick(playerid);
-    return 1;
+    Msg(playerid, msg_type, msg);
+	SetPreciseTimer("KickPlayerDelayed", time, false, "d", playerid);
+	return 1;
 }
 
 // Msg
@@ -73,7 +73,9 @@ stock MessageTDLine_ShowForPlayer(playerid, const str[], time)
         PlayerTextDrawFont(playerid, MessageTDLine[playerid][0], 1);
         PlayerTextDrawSetProportional(playerid, MessageTDLine[playerid][0], 1);
         PlayerTextDrawSetShadow(playerid, MessageTDLine[playerid][0], 1);
-
+    }
+    else
+    {
         PlayerTextDrawSetString(playerid, MessageTDLine[playerid][0], str);
         PlayerTextDrawShow(playerid, MessageTDLine[playerid][0]);
 
