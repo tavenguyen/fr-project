@@ -37,6 +37,7 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <load_database>
 
 //---------------------------------- Modules ----------------------------------//
+#include <fadescreen>
 #include <account>
 
 main(){}

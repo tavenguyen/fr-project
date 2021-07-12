@@ -12,10 +12,10 @@
 static const ACCOUNT_GMAIL_VALID[] = {'g', 'm', 'a', 'i', 'l', '.', 'c', 'o', 'm'};
 static const BCRYPT_COST = 12;
 
-static const ACCOUNT_REGISTER = 0;
-static const ACCOUNT_LOGIN = 1;
+const ACCOUNT_REGISTER = 0;
+const ACCOUNT_LOGIN = 1;
 
-static account_index[MAX_PLAYERS];
+new account_index[MAX_PLAYERS];
 
 enum _:E_PLAYER_ACCOUNT_MEMORY
 {
@@ -94,49 +94,6 @@ stock bool:Account_IsEmailValid(const email[])
     return check_valid;
 }
 
-#include <YSI_Coding\y_hooks>
-
-hook OnGameModeInit()
-{   
-    accountJoined = list_new();    
-    return 1;
-}
-
-hook OnGameModeExit()
-{
-    for(new Iter:account_index_iter = list_iter(accountJoined); iter_inside(account_index_iter);)
-    {
-        iter_erase_deep(account_index_iter);
-    }
-    
-    return 1;
-}
-
-hook OnPlayerConnect(playerid)
-{
-    SendClientMessage(playerid, -1, "test");
-    TogglePlayerSpectating(playerid, true);
-
-    new auth = IsAccountRegistered(playerid);
-    MessageTDLine_ShowForPlayer(playerid, "Tim kiem thanh cong, he thong dang xac dinh lai ket qua.", 2500);
-    wait_ms(2600);
-
-    if(auth == ACCOUNT_REGISTER)
-    {
-        Dialog_Show(playerid, DIALOG_REGISTER_ACCOUNT, DIALOG_STYLE_PASSWORD, "Register Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau tai day de dang ky tai khoan:", "Next", "Close");
-
-        MessageTDLine_ShowForPlayer(playerid, "Tai khoan cua ban chua dang ky, hay thuc hien cac thao tac de co mot Account.", 2000);   
-        return 1;
-    }
-    
-    if(auth == ACCOUNT_LOGIN)
-    {
-        Dialog_Show(playerid, DIALOG_LOGIN_ACCOUNT, DIALOG_STYLE_PASSWORD, "Login Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau de dang nhap tai khoan", "Next", "Close");
-    }
-
-    return 1;
-}
-
 Dialog:DIALOG_LOGIN_ACCOUNT(playerid, response, listitem, inputtext[])
 {
     if(response)
@@ -162,6 +119,7 @@ Dialog:DIALOG_LOGIN_ACCOUNT(playerid, response, listitem, inputtext[])
         }
     }
 
+    printf("debug: %d", account_index[playerid]);
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy qua trinh dang nhap tai khoan.");
     return 1;
 }
@@ -213,6 +171,8 @@ Dialog:DIALOG_REG_EMAIL_ACCOUNT(playerid, response, listitem, const inputtext[])
     }
 
     Account_Destroy(playerid, Account_ReturnName(playerid, 1));
+
+    printf("debug: %d", account_index[playerid]);
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy bo qua trinh dang ky tai khoan.");
     return 0;
 }
@@ -226,29 +186,27 @@ Dialog:DIALOG_CHARACTER_LIST(playerid, response, listitem, const inputtext[])
 
         switch(listitem)
         {
-            case 1:
+            case 0:
             {
                 if(!strcmp(account[accountCharacterName1], "Nhan vat chua duoc khoi tao..."))
                 {
-                    //Character_Register(playerid, listitem);
+                    Character_Create(playerid, listitem);
                     return 1;
                 }
-
-                
             }
-            case 2:
+            case 1:
             {
                 if(!strcmp(account[accountCharacterName2], "Nhan vat chua duoc khoi tao..."))
                 {
-                    //Character_Register(playerid, listitem);
+                    Character_Create(playerid, listitem);
                     return 1;
                 }
             }
-            case 3:
+            case 2:
             {
                 if(!strcmp(account[accountCharacterName3], "Nhan vat chua duoc khoi tao..."))
                 {
-                    //Character_Register(playerid, listitem);
+                    Character_Create(playerid, listitem);
                     return 1;
                 }
             }
@@ -256,6 +214,7 @@ Dialog:DIALOG_CHARACTER_LIST(playerid, response, listitem, const inputtext[])
         return 1;
     }
     
+    printf("debug: %d", account_index[playerid]);
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy qua trinh chon nhan vat/tao nhan vat.");
     return 1;
 }
@@ -282,8 +241,6 @@ public OnPasswordChecked(playerid)
 {
     new bool:match = bcrypt_is_equal();
     MessageTDLine_ShowForPlayer(playerid, "Mat khau cang dai thi kiem tra cang lau, hay doi trong giay lat...", 2000);
-    wait_ms(2000);
-
     if(match == true)
     {
         MessageTDLine_ShowForPlayer(playerid, "Ban da dang nhap tai khoan thanh cong.", 2000);

@@ -1,3 +1,5 @@
+#include <YSI_Data\y_iterate>
+
 stock Account_ReturnName(playerid, _type = 1)
 {
     new name[MAX_PLAYER_NAME + 1];
@@ -16,6 +18,16 @@ stock Account_ReturnName(playerid, _type = 1)
     }
 
     return name;
+}
+
+stock ClearChat(playerid)
+{
+    new t = 50;
+    while(t-- >= 0)
+    {
+        SendClientMessage(playerid, -1, "");
+    }
+    return 1;
 }
 
 stock KickEx(playerid, msg_type, const msg[], time = 500)
@@ -83,4 +95,105 @@ stock MessageTDLine_ShowForPlayer(playerid, const str[], time)
     }
 
     return 1;
+}
+
+stock bool:IsLunarYear(year)
+{
+    if(year % 400 == 0 && year % 100 != 0 || year % 400 == 0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+stock ProxDetector(playerid, Float:max_range, color, const string[], Float:max_ratio = 1.6)
+{
+	new
+		Float:pos_x,
+		Float:pos_y,
+		Float:pos_z,
+		Float:range,
+		Float:range_ratio,
+		Float:range_with_ratio,
+		clr_r, clr_g, clr_b,
+		Float:color_r, Float:color_g, Float:color_b;
+
+	if (!GetPlayerPos(playerid, pos_x, pos_y, pos_z)) {
+		return 0;
+	}
+
+	color_r = float(color >> 24 & 0xFF);
+	color_g = float(color >> 16 & 0xFF);
+	color_b = float(color >> 8 & 0xFF);
+	range_with_ratio = max_range * max_ratio;
+
+	foreach (new i : Player) 
+    {
+		if (!IsPlayerStreamedIn(i, playerid)) 
+        {
+			continue;
+		}
+
+		range = GetPlayerDistanceFromPoint(i, pos_x, pos_y, pos_z);
+		if (range > max_range) {
+			continue;
+		}
+
+		range_ratio = (range_with_ratio - range) / range_with_ratio;
+		clr_r = floatround(range_ratio * color_r);
+		clr_g = floatround(range_ratio * color_g);
+		clr_b = floatround(range_ratio * color_b);
+
+		SendClientMessage(i, (color & 0xFF) | (clr_b << 8) | (clr_g << 16) | (clr_r << 24), string);
+	}
+
+	SendClientMessage(playerid, color, string);
+	return 1;
+}
+
+stock bool:IsRoleplayName(const name[])
+{
+    if(strlen(name) <= MAX_PLAYER_NAME)
+    {
+        new t = strlen(name);
+        new count = 0;
+        new position = 0;
+
+        while(t-- >= 0)
+        {
+            if(name[t] == '_')
+            {
+                count++;
+                position = t;
+            }
+        }
+        
+        if(count == 1)
+        {
+            if(name[position + 1] >= 65 && name[0] >= 65)
+            {
+                t = strlen(name);
+                while(t-- > 0)
+                {
+                    if(t != position + 1)
+                    {
+                        if(name[t] < 65 || name[t] > 122)
+                        {
+                            return false;
+                        }
+
+                        if(name[t] > 90 && name[t] < 97 && name[t] != '_')
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

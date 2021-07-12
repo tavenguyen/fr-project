@@ -64,7 +64,10 @@
 		"db_log_queries": false,
 		"conncookies": true,
 		"cookielogging": false,
-		"output": true
+		"output": true,
+		"extra":{
+			"useartwork": "1"
+		}
 	},
 	"build": {
 		"name": "",
@@ -77,6 +80,7 @@
 			"-v2"
 		],
 		"includes": [
+			"modules/legacy",
 			"modules/configs",
 			"modules/core/settings",
 			"modules/core/database",
