@@ -20,6 +20,8 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <PawnPlus>
 #include <uuid>
 
+#include <YSI_Data\y_iterate>
+
 #include <easyDialog>
 #include <samp-precise-timers>
 #include <easyDialog>
@@ -54,5 +56,3 @@ public OnGameModeInit()
 	EnableVehicleFriendlyFire();
     return 1;
 }
-
-
