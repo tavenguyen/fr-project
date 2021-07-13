@@ -5,13 +5,25 @@
 //    Game Content: Halosetoe               //
 /*--------- Freedom Roleplay v0.1 ---------*/
 
-Character_Create(playerid, position)
+stock CharacterCreate_Reset(playerid)
+{
+    CharacterCreate_Name[playerid][0] = EOS;
+    CharacterCreate_Day[playerid] = 1;
+    CharacterCreate_Month[playerid] = 1;
+    CharacterCreate_Year[playerid] = MIN_CHARACTER_YEAR;
+    CharacterCreate_Gender[playerid] = genderNone;
+    CharacterCreate_SkinColor[playerid] = skinColor_none;
+    CharacterCreate_Skin[playerid] = 1;
+    return 1;
+}
+
+stock Character_Create(playerid)
 {
     ClearChat(playerid);
     FadePlayerScreen(playerid, 0, _, 2000);
     wait_ms(2000);
 
-    SetSpawnInfo(playerid, 0, 2, 153.7668, -1952.2461, 51.3438, 168.0762, 0, 0, 0, 0, 0, 0);
+    SetSpawnInfo(playerid, 0, 1, 153.7668, -1952.2461, 51.3438, 168.0762, 0, 0, 0, 0, 0, 0);
     SetPlayerVirtualWorld(playerid, playerid);
     TogglePlayerSpectating(playerid, false);
     
@@ -22,25 +34,143 @@ Character_Create(playerid, position)
     wait_ms(250);
     TogglePlayerControllable(playerid, false);
     CharacterCreate_Reset(playerid);
+    format(CharacterCreate_Name[playerid], sizeof(CharacterCreate_Name), "%s", Account_ReturnName(playerid, 1));
     
     wait_ms(4500);
     GlobalTD_CharacterShow(playerid);
     ShowCharacterCreate(playerid);
-    
+
     SelectTextDraw(playerid, 0xFFFFF00FF);
     return 1;   
 }
 
-stock CharacterCreate_Reset(playerid)
+stock Character_SelectSkin(playerid)
 {
-    CharacterCreate_Name[playerid][0] = EOS;
-    CharacterCreate_Day[playerid] = 1;
-    CharacterCreate_Month[playerid] = 1;
-    CharacterCreate_Year[playerid] = MIN_CHARACTER_YEAR;
-    CharacterCreate_Gender[playerid] = genderNone;
-    CharacterCreate_SkinColor[playerid] = skinColor_none;
+    GlobalTD_CharacterHide(playerid);
+    PlayerTD_CharacterHide(playerid);
+
+    CancelSelectTextDraw(playerid);
+
+    InterpolateCameraPos(playerid, 153.880020, -1956.661621, 52.494308, 153.167556, -1955.375000, 51.384300, 5000);
+    InterpolateCameraLookAt(playerid, 154.958084, -1952.056640, 50.871875, 154.187622, -1950.491210, 51.055629, 2500);
+    
+    wait_ms(5000);
+    SelectTextDraw(playerid, 0xFFFFF00FF);
+
+    PlayerEditCharacter[playerid] = true;
+    GlobalTD_ShowCharacterSelSkin(playerid);
+    PlayerTD_ShowCharacterSelSkin(playerid);
 
     return 1;
+}
+
+stock CharacterCreate_Finish(playerid)
+{
+    GlobalTD_HideCharacterSelSkin(playerid);
+    PlayerTD_HideCharacterSelSkin(playerid);
+    PlayerEditCharacter[playerid] = false;
+    CancelSelectTextDraw(playerid);
+    
+    isPlayerConnected[playerid] = true;
+    new character[E_CHARACTER_MEMORY];
+
+    strcat(character[characterAccount], Account_ReturnName(playerid, 1)); 
+    strcat(character[characterName], CharacterCreate_Name[playerid]);
+    UUID(character[characterUUID], UUID_LEN);
+
+    character[characterBirthday_Day] = CharacterCreate_Day[playerid]; 
+    character[characterBirthday_Month] =CharacterCreate_Month[playerid];
+    character[characterBirthday_Year] = CharacterCreate_Year[playerid];
+    character[characterAge] = MAX_CHARACTER_YEAR - CharacterCreate_Year[playerid];
+    character[characterGender] = CharacterCreate_Gender[playerid];
+    character[characterSkinColor] = CharacterCreate_SkinColor[playerid];
+    character[characterSkinID] = CharacterCreate_Skin[playerid];
+
+    ClearChat(playerid);
+    FadePlayerScreen(playerid, 0, _, 2000);
+
+    SetPlayerName(playerid, CharacterCreate_Name[playerid]);    
+    SetCameraBehindPlayer(playerid);
+    SetPlayerPos(playerid, 1642.2733, -2333.5156, 13.5469);
+    SetPlayerFacingAngle(playerid, 358.6078);
+    SetPlayerInterior(playerid, 0);
+    SetPlayerVirtualWorld(playerid, 0);
+
+    character[characterPosX] = 1642.2733;
+    character[characterPosY] = -2333.5156; 
+    character[characterPosZ] = 13.5469;
+    character[characterFacingAngle] = 358.6078;
+
+    character[characterInt] = 0;
+    character[characterVW] = 0;
+
+    new query[500];
+    mysql_format(MySQL_GetHandle(), query, sizeof(query), 
+        "INSERT INTO `characters` VALUES ('%e', '%e', '%e', %d, %d, %d, %d, %d, %d, %d, %.4f, %.4f, %.4f, %.4f, %d, %d)",
+        character[characterAccount], character[characterName], character[characterUUID], character[characterAge], character[characterBirthday_Day],
+        character[characterBirthday_Month], character[characterBirthday_Year], character[characterGender], character[characterSkinColor], character[characterSkinID],
+        character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], character[characterInt], character[characterVW]);
+    mysql_tquery(MySQL_GetHandle(), query);
+
+    TogglePlayerControllable(playerid, true);
+    CharacterCreate_Reset(playerid);
+    return list_add_arr(characters, character);
+}
+
+stock Character_Join(playerid, const name[])
+{
+    new character[E_CHARACTER_MEMORY];
+    for(new Iter:characters_index_iter = list_iter(characters); iter_inside(characters_index_iter); iter_move_next(characters_index_iter))
+    {
+        if(iter_get_arr_safe(characters_index_iter, character))
+        {   
+            if(!strcmp(character[characterName], name))
+            {
+                isPlayerConnected[playerid] = true;
+                character_index[playerid] = iter_get_key(characters_index_iter);
+                
+                ClearChat(playerid);
+                SetSpawnInfo(playerid, 0, character[characterSkinID], character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], 0, 0, 0, 0, 0, 0);
+                TogglePlayerSpectating(playerid, false);
+                SpawnPlayer(playerid);
+                SetPlayerName(playerid, character[characterName]);
+                SetPlayerPos(playerid, character[characterPosX], character[characterPosY], character[characterPosZ]);
+                SetPlayerInterior(playerid, character[characterInt]);
+                SetPlayerVirtualWorld(playerid, character[characterVW]);
+                SetCameraBehindPlayer(playerid);
+                FadePlayerScreen(playerid, 0, _, 2000);
+
+                wait_ms(2000);
+                Msg(playerid, MSG_PREFIX_SUCCESS, "Chao mung ban den voi may chu.");
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+SaveCharacter(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        new Float:x, Float:y, Float:z, Float:angle;
+        GetPlayerPos(playerid, x, y, z);
+        GetPlayerFacingAngle(playerid, angle);
+
+        new skinid = GetPlayerSkin(playerid);
+        new int = GetPlayerInterior(playerid);
+        new vw = GetPlayerVirtualWorld(playerid);
+
+        new query[500];
+        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'",
+        skinid, x, y, z, angle, int, vw, character[characterUUID]);
+        mysql_tquery(MySQL_GetHandle(), query);
+
+        return 1;
+    }
+    return 0;
 }
 
 #include <YSI_Coding\y_hooks>
@@ -48,11 +178,86 @@ hook OnPlayerClickTextDraw(playerid, Text:clickedid)
 {
     if(PlayerEditCharacter[playerid] == true)
     {
+        if(clickedid == GlobalTD_Character[3])
+        {
+            if(CharacterCreate_Gender[playerid] == genderNone || CharacterCreate_SkinColor[playerid] == skinColor_none)
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Muc gioi tinh hoac chung toc khong chon, vui long chon de thuc hien tiep cac buoc tiep theo");
+            }
+
+            Character_SelectSkin(playerid);
+            return 1;
+        }
+
         if(clickedid == Text:INVALID_TEXT_DRAW)
         {
+            PlayerEditCharacter[playerid] = false;
             GlobalTD_CharacterHide(playerid);
             PlayerTD_CharacterHide(playerid);
             KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy qua trinh tao nhanh vat, hay dang nhap lai neu muon tao lai.");
+            return 1;
+        }
+
+        if(clickedid == GlobalTD_Character[4])
+        {
+            PlayerEditCharacter[playerid] = false;
+            CharacterCreate_Reset(playerid);
+            GlobalTD_CharacterHide(playerid);
+            PlayerTD_CharacterHide(playerid);
+            ClearChat(playerid);
+            CallLocalFunction("OnAccountShowList", "is", playerid, Account_ReturnName(playerid, 1));
+            return 1;
+        }
+
+        if(clickedid == GlobalTD_CharacterSelSkin[1])
+        {
+            if(CharacterCreate_Skin[playerid] == 1)
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the thao tac nua.");
+            }
+
+            CharacterCreate_Skin[playerid]--;
+            SetPlayerSkin(playerid, CharacterCreate_Skin[playerid]);
+
+            new string[10];
+            if(CharacterCreate_Skin[playerid] < 10) format(string, sizeof(string), "00%d",  CharacterCreate_Skin[playerid]);
+            if(CharacterCreate_Skin[playerid] >= 10 &&  CharacterCreate_Skin[playerid] < 100) format(string, sizeof(string), "0%d",  CharacterCreate_Skin[playerid]);
+            if(CharacterCreate_Skin[playerid] >= 100) format(string, sizeof(string), "%d",  CharacterCreate_Skin[playerid]);
+
+            PlayerTextDrawHide(playerid, PlayerTD_CharacterSelSkin[playerid][0]);
+            PlayerTextDrawSetString(playerid, PlayerTD_CharacterSelSkin[playerid][0], string);
+            PlayerTextDrawShow(playerid, PlayerTD_CharacterSelSkin[playerid][0]);
+
+            return 1;
+        }
+
+        if(clickedid == GlobalTD_CharacterSelSkin[2])
+        {
+            if(CharacterCreate_Skin[playerid] == 312)
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the thao tac nua.");
+            }
+
+            CharacterCreate_Skin[playerid]++;
+            SetPlayerSkin(playerid, CharacterCreate_Skin[playerid]);
+
+            new string[10];
+            if(CharacterCreate_Skin[playerid] < 10) format(string, sizeof(string), "00%d", CharacterCreate_Skin[playerid]);
+            if(CharacterCreate_Skin[playerid] >= 10 && CharacterCreate_Skin[playerid] < 100) format(string, sizeof(string), "0%d", CharacterCreate_Skin[playerid]);
+            if(CharacterCreate_Skin[playerid] >= 100) format(string, sizeof(string), "%d", CharacterCreate_Skin[playerid]);
+
+            PlayerTextDrawHide(playerid, PlayerTD_CharacterSelSkin[playerid][0]);
+            PlayerTextDrawSetString(playerid, PlayerTD_CharacterSelSkin[playerid][0], string);
+            PlayerTextDrawShow(playerid, PlayerTD_CharacterSelSkin[playerid][0]);
+
+            return 1;
+        }
+
+        if(clickedid == GlobalTD_CharacterSelSkin[3])
+        {
+            Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da hoan tat qua trinh tao nhan vat, chao mung ban den voi thanh pho.");
+            CharacterCreate_Finish(playerid);
+            
             return 1;
         }
     }
@@ -62,261 +267,64 @@ hook OnPlayerClickTextDraw(playerid, Text:clickedid)
 
 hook OnPlayerClickPlayerTD(playerid, PlayerText:playertextid)
 {
+    if(PlayerEditCharacter[playerid] == true)
+    {
     // Character name change.
-    if(playertextid == PlayerTD_CharacterCreate[playerid][0])
-    {
-        SendClientMessage(playerid, -1, "debug");
-        Dialog_Show(playerid, DIALOG_CHAR_NAME_INPUT, DIALOG_STYLE_INPUT, "Input Character Name", "Ban hay nhap vao ten nhan vat cua ban.", "Accept", "Close");
-    }
+        if(playertextid == PlayerTD_CharacterCreate[playerid][0])
+        {
+            SendClientMessage(playerid, -1, "debug");
+            Dialog_Show(playerid, DIALOG_CHAR_NAME_INPUT, DIALOG_STYLE_INPUT, "Input Character Name", "Ban hay nhap vao ten nhan vat cua ban.", "Accept", "Close");
+        }
 
-    // Birthday - day
-    if(playertextid == PlayerTD_CharacterCreate[playerid][2])
-    {
-        Dialog_Show(playerid, DIALOG_CHAR_BORN_DAY, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao ngay sinh cua nhan vat.", "Accept", "Cancel");
-    }
+        // Birthday - day
+        if(playertextid == PlayerTD_CharacterCreate[playerid][2])
+        {
+            Dialog_Show(playerid, DIALOG_CHAR_BORN_DAY, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao ngay sinh cua nhan vat.", "Accept", "Cancel");
+        }
 
-    // Birthday - month
-    if(playertextid == PlayerTD_CharacterCreate[playerid][3])
-    {
-        Dialog_Show(playerid, DIALOG_CHAR_BORN_MONTH, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao day thang sinh cua nhan vat ban.", "Accept", "Cancel");
-    }
+        // Birthday - month
+        if(playertextid == PlayerTD_CharacterCreate[playerid][3])
+        {
+            Dialog_Show(playerid, DIALOG_CHAR_BORN_MONTH, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao day thang sinh cua nhan vat ban.", "Accept", "Cancel");
+        }
 
-    // Birthday - year
-    if(playertextid == PlayerTD_CharacterCreate[playerid][4])
-    {
-        Dialog_Show(playerid, DIALOG_CHAR_BORN_YEAR, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao day nam sinh cua nhan vat ban.", "Accept", "Cancel");
-    }
+        // Birthday - year
+        if(playertextid == PlayerTD_CharacterCreate[playerid][4])
+        {
+            Dialog_Show(playerid, DIALOG_CHAR_BORN_YEAR, DIALOG_STYLE_INPUT, "Input Birthday", "Ban hay nhap vao day nam sinh cua nhan vat ban.", "Accept", "Cancel");
+        }
 
-    if(playertextid == PlayerTD_CharacterCreate[playerid][5])
-    {
-        Dialog_Show(playerid, DIALOG_CHAR_GENDER, DIALOG_STYLE_LIST, "Gender Selection", "Male\nFemale", "Accept", "Cancel");
-    }
+        // Gender
+        if(playertextid == PlayerTD_CharacterCreate[playerid][5])
+        {
+            Dialog_Show(playerid, DIALOG_CHAR_GENDER, DIALOG_STYLE_LIST, "Gender Selection", "Male\nFemale", "Accept", "Cancel");
+        }
 
-    if(playertextid == PlayerTD_CharacterCreate[playerid][6])
-    {
-        Dialog_Show(playerid, DIALOG_CHAR_SKIN_COLOR, DIALOG_STYLE_LIST, "Skin Color Selection", "White\nYellow\nBlack", "Accept", "Cancel");
+        // Skin Color
+        if(playertextid == PlayerTD_CharacterCreate[playerid][6])
+        {
+            Dialog_Show(playerid, DIALOG_CHAR_SKIN_COLOR, DIALOG_STYLE_LIST, "Skin Color Selection", "White\nYellow\nBlack", "Accept", "Cancel");
+        }
+
+        // Select Skin
+        if(playertextid == PlayerTD_CharacterSelSkin[playerid][0])
+        {   
+            Dialog_Show(playerid, DIALOG_CHAR_SELECT_SKIN, DIALOG_STYLE_INPUT, "Skin Input", "Hay nhap vao day Skin ID ma ban muon.", "Accept", "Cancel");
+        }
     }
 
     return 1;
 }
 
-Dialog:DIALOG_CHAR_NAME_INPUT(playerid, response, listitem, const inputtext[])
+hook OnPlayerDisconnect(playerid, reason)
 {
-    if(response)
+    if(isPlayerConnected[playerid] == true)
     {
-        if(IsRoleplayName(inputtext))
+        if(SaveCharacter(playerid) == 1) 
         {
-            PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][0]);
-            PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][0], inputtext);
-            PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][0]);
-
-            format(CharacterCreate_Name[playerid], sizeof(CharacterCreate_Name), "%s", inputtext);
-            return 1;
+            printf("Luu thanh cong nhan vat %s", Account_ReturnName(playerid));
         }
-        else Msg(playerid, MSG_PREFIX_ERROR, "Ten nay khong phu hop voi may chu, vui long thu lai.");
+        else printf("[ERROR] Luu khong thanh cong nhan vat %s", Account_ReturnName(playerid));
     }
-
-    return 0;
-}
-
-Dialog:DIALOG_CHAR_BORN_DAY(playerid, response, listitem, const inputtext[])
-{
-    if(response)
-    {
-        new day = strval(inputtext);
-        new bool:isLunarMonth = false;
-
-        if(day > 0 && day < 32)
-        {
-            if(day == 31)
-            {
-                for(new i = 0; i < sizeof(lunarMonth); i++)
-                {
-                    if(CharacterCreate_Month[playerid] == lunarMonth[i])
-                    {
-                        isLunarMonth = true;
-                        break;
-                    }
-                }
-
-                if(isLunarMonth == false)
-                {
-                    return Msg(playerid, MSG_PREFIX_ERROR, "Ngay nay khong co trong thang ma ban chon, hay thuc hien lai.");
-                }
-            }
-
-            if(CharacterCreate_Month[playerid] == 2)
-            {
-                if(day == 29)
-                {
-                    if(!IsLunarYear(CharacterCreate_Year[playerid]))
-                    {
-                        return Msg(playerid, MSG_PREFIX_ERROR, "Nam ma ban chon khong phai la nam nhuan, nen khong co ngay 29 vao thang 2");
-                    }
-                }
-            }
-
-            CharacterCreate_Day[playerid] = day;
-            Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da lua chon ngay thanh cong!");
-
-            new string[10];
-            format(string, sizeof(string), "%d", CharacterCreate_Day[playerid]);
-
-            PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][2]);
-            PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][2], string);
-            PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][2]);
-        }
-        else Msg(playerid, MSG_PREFIX_ERROR, "Ngay sinh khong phu hop, vui long thu lai.");
-    }
-    return 0;
-}
-
-Dialog:DIALOG_CHAR_BORN_MONTH(playerid, response, listitem, const inputtext[])
-{
-    if(response)
-    {
-        new month = strval(inputtext);
-        if(month > 0 && month < 13)
-        {
-            CharacterCreate_Month[playerid] = month;
-            
-            new string[10];
-            format(string, sizeof(string), "%d", month);
-
-            PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][3]);
-            PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][3], string);
-            PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][3]);
-            
-            Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da nhap thanh cong thang sinh cua ban.");
-        }
-        else Msg(playerid, MSG_PREFIX_ERROR, "Thang sinh cua ban khong hop le, vui long thu lai.");
-    }
-
-    return 0;
-}
-
-Dialog:DIALOG_CHAR_BORN_YEAR(playerid, response, listitem, const inputtext[])
-{
-    if(response)
-    {
-        new year = strval(inputtext);
-        if(year >= MIN_CHARACTER_YEAR && year <= MAX_CHARACTER_YEAR - 15)
-        {
-            CharacterCreate_Year[playerid] = year;
-
-            new string[128];
-            format(string, sizeof(string), "%d", year);
-
-            PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][4]);
-            PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][4], string);
-            PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][4]);
-
-            format(string, sizeof(string), "Ban da nhap thanh cong nam sinh cua ban, tinh den hien tai ban dang %d tuoi", MAX_CHARACTER_YEAR - year);
-            Msg(playerid, MSG_PREFIX_SUCCESS, string);
-        }
-        else Msg(playerid, MSG_PREFIX_ERROR, "So tuoi khong hop le hoac ban khong the nhap vai so tuoi nho hon 15");
-    }
-
-    return 0;
-}
-
-Dialog:DIALOG_CHAR_GENDER(playerid, response, listitem, const inputtext[])
-{
-    if(response)
-    {
-        switch(listitem)
-        {
-            // Male
-            case 0:
-            {
-                CharacterCreate_Gender[playerid] = genderMale;
-
-                new string[100];
-                format(string, sizeof(string), "Male");
-               
-                PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][5]);
-                PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][5], string);
-                PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][5]);
-
-                format(string, sizeof(string), "Ban vua chon gioi tinh Nam.");
-                Msg(playerid, MSG_PREFIX_SUCCESS, string);
-                return 1;
-            }
-            // Female
-            case 1:
-            {
-                CharacterCreate_Gender[playerid] = genderFemale;
-
-                new string[100];
-                format(string, sizeof(string), "Female");
-               
-                PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][5]);
-                PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][5], string);
-                PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][5]);
-
-                format(string, sizeof(string), "Ban vua chon gioi tinh Nu.");
-                Msg(playerid, MSG_PREFIX_SUCCESS, string);
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
-Dialog:DIALOG_CHAR_SKIN_COLOR(playerid, response, listitem, const inputtext[])
-{
-    if(response)
-    {
-        switch(listitem)
-        {
-            // White
-            case 0:
-            {
-                CharacterCreate_SkinColor[playerid] = skinColor_white;
-
-                new string[100];
-                format(string, sizeof(string), "Oropeoit");
-
-                PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][6]);
-                PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][6], string);
-                PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][6]);
-
-                format(string, sizeof(string), "Ban vua chon nguoi da trang.");
-                Msg(playerid, MSG_PREFIX_SUCCESS, string);
-                return 1;
-            }
-            case 1:
-            {
-                CharacterCreate_SkinColor[playerid] = skinColor_yellow;
-
-                new string[100];
-                format(string, sizeof(string), "Mongoloit");
-
-                PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][6]);
-                PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][6], string);
-                PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][6]);
-
-                format(string, sizeof(string), "Ban vua chon nguoi da vang.");
-                Msg(playerid, MSG_PREFIX_SUCCESS, string);
-                return 1;
-            }
-            case 2:
-            {
-                CharacterCreate_SkinColor[playerid] = skinColor_black;
-
-                new string[100];
-                format(string, sizeof(string), "Negroit");
-
-                PlayerTextDrawHide(playerid, PlayerTD_CharacterCreate[playerid][6]);
-                PlayerTextDrawSetString(playerid, PlayerTD_CharacterCreate[playerid][6], string);
-                PlayerTextDrawShow(playerid, PlayerTD_CharacterCreate[playerid][6]);
-
-                format(string, sizeof(string), "Ban vua chon nguoi da den.");
-                Msg(playerid, MSG_PREFIX_SUCCESS, string);
-            }
-        }
-    }
-
-    return 0;
+    return 1;
 }

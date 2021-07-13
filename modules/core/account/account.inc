@@ -7,6 +7,7 @@
 
 #include <Character/config_character>
 #include <textdraw>
+#include <Character/character_dialog>
 
 #include <Character/character>
 
@@ -16,8 +17,10 @@
 hook OnGameModeInit()
 {   
     accountJoined = list_new();  
-    //characters = list_new();
+    characters = list_new();
+    
     GlobalTD_CharacterCreate();  
+    GlobalTD_CharacterSelectSkin();
     return 1;
 }
 
@@ -33,6 +36,9 @@ hook OnGameModeExit()
 
 hook OnPlayerConnect(playerid)
 {
+    isPlayerConnected[playerid] = false;
+    character_index[playerid] = -1;
+    
     if(account_index[playerid] != -1)
     {
         account_index[playerid] = -1;

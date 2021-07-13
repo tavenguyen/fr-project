@@ -119,7 +119,7 @@ Dialog:DIALOG_LOGIN_ACCOUNT(playerid, response, listitem, inputtext[])
         }
     }
 
-    printf("debug: %d", account_index[playerid]);
+    
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy qua trinh dang nhap tai khoan.");
     return 1;
 }
@@ -160,7 +160,7 @@ Dialog:DIALOG_REG_EMAIL_ACCOUNT(playerid, response, listitem, const inputtext[])
                 mysql_tquery(MySQL_GetHandle(), query);
 
                 mysql_format(MySQL_GetHandle(), query, sizeof(query), "SELECT * FROM `characters`", account[accountName]);
-                mysql_tquery(MySQL_GetHandle(), query, "OnAccountShowList", "isf", playerid, account[accountName], true);
+                mysql_tquery(MySQL_GetHandle(), query, "OnAccountShowList", "is", playerid, account[accountName]);
                 return 1;
             }
         }
@@ -172,7 +172,7 @@ Dialog:DIALOG_REG_EMAIL_ACCOUNT(playerid, response, listitem, const inputtext[])
 
     Account_Destroy(playerid, Account_ReturnName(playerid, 1));
 
-    printf("debug: %d", account_index[playerid]);
+    
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy bo qua trinh dang ky tai khoan.");
     return 0;
 }
@@ -190,31 +190,35 @@ Dialog:DIALOG_CHARACTER_LIST(playerid, response, listitem, const inputtext[])
             {
                 if(!strcmp(account[accountCharacterName1], "Nhan vat chua duoc khoi tao..."))
                 {
-                    Character_Create(playerid, listitem);
+                    Character_Create(playerid);
                     return 1;
                 }
+
+                Character_Join(playerid, account[accountCharacterName1]);
             }
             case 1:
             {
                 if(!strcmp(account[accountCharacterName2], "Nhan vat chua duoc khoi tao..."))
                 {
-                    Character_Create(playerid, listitem);
+                    Character_Create(playerid);
                     return 1;
                 }
+
+                Character_Join(playerid, account[accountCharacterName2]);
             }
             case 2:
             {
                 if(!strcmp(account[accountCharacterName3], "Nhan vat chua duoc khoi tao..."))
                 {
-                    Character_Create(playerid, listitem);
+                    Character_Create(playerid);
                     return 1;
-                }
+                } 
+                Character_Join(playerid, account[accountCharacterName3]);
             }
         }
         return 1;
     }
     
-    printf("debug: %d", account_index[playerid]);
     KickEx(playerid, MSG_PREFIX_ERROR, "Ban da huy qua trinh chon nhan vat/tao nhan vat.");
     return 1;
 }
@@ -250,7 +254,7 @@ public OnPasswordChecked(playerid)
 
         new query[500];
         mysql_format(MySQL_GetHandle(), query, sizeof(query), "SELECT * FROM `characters`", account_inside[accountName]);
-        mysql_tquery(MySQL_GetHandle(), query, "OnAccountShowList", "isb", playerid, account_inside[accountName], false);
+        mysql_tquery(MySQL_GetHandle(), query, "OnAccountShowList", "is", playerid, account_inside[accountName]);
     }
     else
     {
@@ -261,8 +265,8 @@ public OnPasswordChecked(playerid)
     return 1;
 }
 
-forward OnAccountShowList(playerid, const name[], bool:isPlayerRegistered);
-public OnAccountShowList(playerid, const name[], bool:isPlayerRegistered)
+forward OnAccountShowList(playerid, const name[]);
+public OnAccountShowList(playerid, const name[])
 {
     new name_db[MAX_PLAYER_NAME + 1];
     new count = 0;
@@ -270,33 +274,30 @@ public OnAccountShowList(playerid, const name[], bool:isPlayerRegistered)
     new account[E_PLAYER_ACCOUNT_MEMORY];
     list_get_arr_safe(accountJoined, account_index[playerid], account);
 
-    if(isPlayerRegistered == true)
+    format(account[accountCharacterName1], sizeof(account[accountCharacterName1]), "Nhan vat chua duoc khoi tao...");
+    format(account[accountCharacterName2], sizeof(account[accountCharacterName2]), "Nhan vat chua duoc khoi tao...");
+    format(account[accountCharacterName3], sizeof(account[accountCharacterName3]), "Nhan vat chua duoc khoi tao...");
+
+    new rows = cache_num_rows();
+    for(new index = 0; index < rows; index++)
     {
-        format(account[accountCharacterName1], sizeof(account[accountCharacterName1]), "Nhan vat chua duoc khoi tao...");
-        format(account[accountCharacterName2], sizeof(account[accountCharacterName2]), "Nhan vat chua duoc khoi tao...");
-        format(account[accountCharacterName3], sizeof(account[accountCharacterName3]), "Nhan vat chua duoc khoi tao...");
-    
-        new rows = cache_num_rows();
-        for(new index = 0; index < rows; index++)
+        if(count == 3)
         {
-            if(count == 3)
-            {
-                break;
-            }
+            break;
+        }
 
-            cache_get_value_name(index, "charAccount", name_db, MAX_PLAYER_NAME + 1);
-            if(!strcmp(name_db, name, false))
-            {
-                new nameChar[MAX_PLAYER_NAME + 1];
-                cache_get_value_name(index, "charName", nameChar, MAX_PLAYER_NAME + 1);
-                count++;
+        cache_get_value_name(index, "charAccount", name_db, MAX_PLAYER_NAME + 1);
+        if(!strcmp(name_db, name, false))
+        {
+            new nameChar[MAX_PLAYER_NAME + 1];
+            cache_get_value_name(index, "charName", nameChar, MAX_PLAYER_NAME + 1);
+            count++;
 
-                switch(count)
-                {
-                    case 1: format(account[accountCharacterName1], sizeof(account[accountCharacterName1]), "%s", nameChar);
-                    case 2: format(account[accountCharacterName2], sizeof(account[accountCharacterName2]), "%s", nameChar);
-                    case 3: format(account[accountCharacterName3], sizeof(account[accountCharacterName3]), "%s", nameChar);
-                }
+            switch(count)
+            {
+                case 1: format(account[accountCharacterName1], sizeof(account[accountCharacterName1]), "%s", nameChar);
+                case 2: format(account[accountCharacterName2], sizeof(account[accountCharacterName2]), "%s", nameChar);
+                case 3: format(account[accountCharacterName3], sizeof(account[accountCharacterName3]), "%s", nameChar);
             }
         }
         list_set_arr(accountJoined, account_index[playerid], account);
@@ -305,7 +306,6 @@ public OnAccountShowList(playerid, const name[], bool:isPlayerRegistered)
         mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `accounts` SET `accountCharacterName1` = '%e', `accountCharacterName2` = '%e', `accountCharacterName3` = '%e' WHERE `account_Name` = '%e'", account[accountCharacterName1], account[accountCharacterName2], account[accountCharacterName3], account[accountName]);
         mysql_tquery(MySQL_GetHandle(), query);
     }
-
 
     new string[128];
     format(string, sizeof(string), "%s\n%s\n%s", account[accountCharacterName1], account[accountCharacterName2], account[accountCharacterName3]);
