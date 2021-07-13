@@ -1,11 +1,11 @@
-stock bool:String_RemoveChar(str[], const str2[])
+stock bool:String_RemoveChar(name[], charToDel)
 {
-    for(new index = 0; index < strlen(str); index++)
+    for(new index = 0; index < strlen(name); index++)
     {
-        if(!strcmp(str[index], str2))
+        if(name[index] == charToDel)
         {
-            str[index] = EOS;
-            break;
+            name[index] = ' ';
+            return true;
         }
     }
 

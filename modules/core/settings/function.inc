@@ -7,7 +7,7 @@ stock Account_ReturnName(playerid, _type = 1)
     {
         case 0:
         {
-            String_RemoveChar(name, "_");
+            String_RemoveChar(name, '_');
             return name;
         }
         case 1:
