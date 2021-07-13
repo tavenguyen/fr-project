@@ -4,6 +4,7 @@
 hook OnGameModeInit()
 {
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `accounts`", "OnAccountLoad");
+    mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `characters`", "OnCharacterLoad");
     return 1;
 }
 
@@ -43,5 +44,36 @@ public OnAccountLoad()
     }
 
     printf("Loaded %d accounts from database.", rows);
+    return 1;
+}
+
+forward OnCharacterLoad();
+public OnCharacterLoad()
+{
+    new rows = cache_num_rows();
+    for(new index = 0; index < rows; index++)
+    {
+        new character[E_CHARACTER_MEMORY];
+        cache_get_value_name(index, "charAccount", character[characterAccount], MAX_PLAYER_NAME + 1);
+        cache_get_value_name(index, "charName", character[characterName], MAX_PLAYER_NAME + 1);
+        cache_get_value_name(index, "charUUID", character[characterUUID], UUID_LEN);
+        cache_get_value_int(index, "charAge", character[characterAge]);
+        cache_get_value_int(index, "charBirthdayDay", character[characterBirthday_Day]);
+        cache_get_value_int(index, "charBirthdayMonth", character[characterBirthday_Month]);
+        cache_get_value_int(index, "charBirthdayYear", character[characterBirthday_Year]);
+        cache_get_value_int(index, "charGender", character[characterGender]);
+        cache_get_value_int(index, "charSkinColor", character[characterSkinColor]);
+        cache_get_value_int(index, "charSkin", character[characterSkinID]);
+        cache_get_value_float(index, "charPosX", character[characterPosX]);
+        cache_get_value_float(index, "charPosY", character[characterPosY]);
+        cache_get_value_float(index, "charPosZ", character[characterPosZ]);
+        cache_get_value_float(index, "charAngle", character[characterFacingAngle]);
+        cache_get_value_int(index, "charInteriorID", character[characterInt]);
+        cache_get_value_int(index, "charWorldID", character[characterVW]);
+
+        list_add_arr(characters, character);
+    }
+    
+    printf("Loaded  %d characters from database.", rows);
     return 1;
 }
