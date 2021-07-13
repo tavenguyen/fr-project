@@ -1,4 +1,5 @@
 #include <YSI_Coding\y_hooks>
+
 hook OnPlayerDisconnect(playerid, reason)
 {
     PlayerTextDrawHide(playerid, MessageTDLine[playerid][0]);
