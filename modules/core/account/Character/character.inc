@@ -100,18 +100,21 @@ stock CharacterCreate_Finish(playerid)
     character[characterPosY] = -2333.5156; 
     character[characterPosZ] = 13.5469;
     character[characterFacingAngle] = 358.6078;
-
+    character[characterHealth] = 100.0;
+    character[characterArmour] = 0.0;
     character[characterInt] = 0;
     character[characterVW] = 0;
 
     new query[500];
     mysql_format(MySQL_GetHandle(), query, sizeof(query), 
-        "INSERT INTO `characters` VALUES ('%e', '%e', '%e', %d, %d, %d, %d, %d, %d, %d, %.4f, %.4f, %.4f, %.4f, %d, %d)",
+        "INSERT INTO `characters` VALUES ('%e', '%e', '%e', %d, %d, %d, %d, %d, %d, %d, %.4f, %.4f, %.4f, %.4f, %d, %d, %.4f, %.4f)",
         character[characterAccount], character[characterName], character[characterUUID], character[characterAge], character[characterBirthday_Day],
         character[characterBirthday_Month], character[characterBirthday_Year], character[characterGender], character[characterSkinColor], character[characterSkinID],
-        character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], character[characterInt], character[characterVW]);
-    mysql_tquery(MySQL_GetHandle(), query);
+        character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], character[characterInt], character[characterVW], 
+        character[characterHealth], character[characterArmour]);
 
+    mysql_tquery(MySQL_GetHandle(), query);
+    
     TogglePlayerControllable(playerid, true);
     CharacterCreate_Reset(playerid);
     return list_add_arr(characters, character);
@@ -137,6 +140,8 @@ stock Character_Join(playerid, const name[])
                 SetPlayerPos(playerid, character[characterPosX], character[characterPosY], character[characterPosZ]);
                 SetPlayerInterior(playerid, character[characterInt]);
                 SetPlayerVirtualWorld(playerid, character[characterVW]);
+                SetPlayerHealth(playerid, character[characterHealth]);
+                SetPlayerArmour(playerid, character[characterArmour]);
                 SetCameraBehindPlayer(playerid);
                 FadePlayerScreen(playerid, 0, _, 2000);
 
@@ -163,9 +168,13 @@ SaveCharacter(playerid)
         new int = GetPlayerInterior(playerid);
         new vw = GetPlayerVirtualWorld(playerid);
 
+        new Float:health, Float:armour;
+        GetPlayerHealth(playerid, health);
+        GetPlayerArmour(playerid, armour);
+
         new query[500];
-        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'",
-        skinid, x, y, z, angle, int, vw, character[characterUUID]);
+        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charHealth` = %.4f, `charArmour` = %.4f, `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'",
+            health, armour, skinid, x, y, z, angle, int, vw, character[characterUUID]);
         mysql_tquery(MySQL_GetHandle(), query);
 
         return 1;

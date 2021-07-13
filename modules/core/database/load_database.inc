@@ -70,6 +70,8 @@ public OnCharacterLoad()
         cache_get_value_float(index, "charAngle", character[characterFacingAngle]);
         cache_get_value_int(index, "charInteriorID", character[characterInt]);
         cache_get_value_int(index, "charWorldID", character[characterVW]);
+        cache_get_value_float(index, "charHealth", character[characterHealth]);
+        cache_get_value_float(index, "charArmour", character[characterArmour]);
 
         list_add_arr(characters, character);
     }

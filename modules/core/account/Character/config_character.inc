@@ -40,7 +40,9 @@ enum _:E_CHARACTER_MEMORY
     Float:characterPosZ,
     Float:characterFacingAngle,
     characterInt,
-    characterVW
+    characterVW,
+    Float:characterHealth,
+    Float:characterArmour
 }
 
 new character_index[MAX_PLAYERS] = -1;
