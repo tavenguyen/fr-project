@@ -387,3 +387,14 @@ stock Character_GetAccent(playerid)
 
     return string;
 }
+
+stock GetAdminLevel(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        return character[characterAdminLevel];
+    }
+
+    return 0;
+}
