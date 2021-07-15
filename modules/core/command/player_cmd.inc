@@ -213,12 +213,12 @@ CMD:mota(playerid, params[])
         {
             new string[MAX_CHARACTER_DESCRIBE + 29 + MAX_PLAYER_NAME + 1];
 
-            format(string, sizeof(string), "[Describe] %s: {fc6565}%s", Account_ReturnName(playerid, 0), character[characterDescribe]);
+            format(string, sizeof(string), "Mo ta cua nguoi choi %s la: {fc6565}%s", Account_ReturnName(targetid, 0), character[characterDescribe]);
             if(!strcmp(character[characterDescribe], "none"))
             {
                 if(playerid != targetid) 
                 {
-                    format(string, sizeof(string), "{fc6565}Nguoi choi %s khong co mo ta.", Account_ReturnName(playerid, 0));
+                    format(string, sizeof(string), "{fc6565}Nguoi choi %s khong co mo ta.", Account_ReturnName(targetid, 0));
                 }
                 else
                 {
