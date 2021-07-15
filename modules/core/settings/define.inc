@@ -3,3 +3,7 @@
 
 #define                 MIN_CHARACTER_YEAR                      1926
 #define                 MAX_CHARACTER_YEAR                      2021
+
+#define                 MAX_CHAT_STRING                         80  
+#define                 MAX_CHARACTER_ACCENT                    24
+#define                 MAX_CHARACTER_DESCRIBE                  128

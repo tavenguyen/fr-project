@@ -21,11 +21,10 @@ hook OnPlayerText(playerid, text[])
 {
     if(isPlayerConnected[playerid] == true)
     {
-        new string[128];
-        format(string, sizeof(string), "%s noi: %s", Account_ReturnName(playerid, 0), text);
-        ProxDetector(playerid, 10.0, -1, string);
+        SendSplitString(playerid, 0, text);
     }   
-    return false;
+
+    return 0;
 }
 
 forward KickPlayerDelayed(playerid);

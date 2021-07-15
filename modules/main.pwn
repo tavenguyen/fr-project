@@ -19,6 +19,9 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 
 #include <PawnPlus>
 #include <uuid>
+#include <streamer>
+#include <sscanf2>
+#include <Pawn.CMD>
 
 #include <YSI_Data\y_iterate>
 
@@ -29,8 +32,8 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <config-colors>
 #include <config-dialogs-id>
 //---------------------------------- Settings ----------------------------------//
-#include <define>
 #include <varaible>
+#include <define>
 #include <callback>
 #include <fc_string>
 #include <function>
@@ -41,6 +44,9 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 //---------------------------------- Modules ----------------------------------//
 #include <fadescreen>
 #include <account>
+#include <player_cmd>
+
+#include <admin\admin_cmd>
 
 main(){}
 
@@ -55,4 +61,15 @@ public OnGameModeInit()
 	EnableStuntBonusForAll(0);
 	EnableVehicleFriendlyFire();
     return 1;
+}
+
+public OnGameModeExit()
+{
+	foreach(new i : Player)
+	{
+		SaveCharacter(i);
+		Kick(i);
+	}
+
+	return 1;
 }

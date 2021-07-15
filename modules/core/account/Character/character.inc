@@ -76,6 +76,8 @@ stock CharacterCreate_Finish(playerid)
 
     strcat(character[characterAccount], Account_ReturnName(playerid, 1)); 
     strcat(character[characterName], CharacterCreate_Name[playerid]);
+    format(character[characterAccent], sizeof(character[characterAccent]), "none");
+    format(character[characterDescribe], sizeof(character[characterDescribe]), "none");
     UUID(character[characterUUID], UUID_LEN);
 
     character[characterBirthday_Day] = CharacterCreate_Day[playerid]; 
@@ -85,39 +87,44 @@ stock CharacterCreate_Finish(playerid)
     character[characterGender] = CharacterCreate_Gender[playerid];
     character[characterSkinColor] = CharacterCreate_SkinColor[playerid];
     character[characterSkinID] = CharacterCreate_Skin[playerid];
+    
+    character[characterAdminLevel] = 0;
 
-    ClearChat(playerid);
-    FadePlayerScreen(playerid, 0, _, 2000);
-
-    SetPlayerName(playerid, CharacterCreate_Name[playerid]);    
-    SetCameraBehindPlayer(playerid);
-    SetPlayerPos(playerid, 1642.2733, -2333.5156, 13.5469);
-    SetPlayerFacingAngle(playerid, 358.6078);
-    SetPlayerInterior(playerid, 0);
-    SetPlayerVirtualWorld(playerid, 0);
-
+    character[characterInt] = 0;
+    character[characterVW] = 0;
+    
     character[characterPosX] = 1642.2733;
     character[characterPosY] = -2333.5156; 
     character[characterPosZ] = 13.5469;
     character[characterFacingAngle] = 358.6078;
     character[characterHealth] = 100.0;
     character[characterArmour] = 0.0;
-    character[characterInt] = 0;
-    character[characterVW] = 0;
+
+
+    ClearChat(playerid);
+    FadePlayerScreen(playerid, 0, _, 2000);
+    SetPlayerName(playerid, CharacterCreate_Name[playerid]);    
+    SetCameraBehindPlayer(playerid);
+    SetPlayerPos(playerid, 1642.2733, -2333.5156, 13.5469);
+    SetPlayerFacingAngle(playerid, 358.6078);
+    SetPlayerInterior(playerid, 0);
+    SetPlayerVirtualWorld(playerid, 0);
+    TogglePlayerControllable(playerid, true);
+    CharacterCreate_Reset(playerid);
 
     new query[500];
     mysql_format(MySQL_GetHandle(), query, sizeof(query), 
-        "INSERT INTO `characters` VALUES ('%e', '%e', '%e', %d, %d, %d, %d, %d, %d, %d, %.4f, %.4f, %.4f, %.4f, %d, %d, %.4f, %.4f)",
-        character[characterAccount], character[characterName], character[characterUUID], character[characterAge], character[characterBirthday_Day],
-        character[characterBirthday_Month], character[characterBirthday_Year], character[characterGender], character[characterSkinColor], character[characterSkinID],
-        character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], character[characterInt], character[characterVW], 
-        character[characterHealth], character[characterArmour]);
-
-    mysql_tquery(MySQL_GetHandle(), query);
+        "INSERT INTO `characters` VALUES ('%e', '%e', '%e', '%e', '%e', %d, %d, %d, %d, %d, %d, %d, %.4f, %.4f, %.4f, %.4f, %d, %d, %.4f, %.4f,\
+        %d)",
+    character[characterAccount], character[characterName], character[characterUUID], character[characterAccent], character[characterDescribe], character[characterAge], character[characterBirthday_Day],
+    character[characterBirthday_Month], character[characterBirthday_Year], character[characterGender], character[characterSkinColor], character[characterSkinID],
+    character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], character[characterInt], character[characterVW], 
+    character[characterHealth], character[characterArmour], character[characterAdminLevel]);
     
-    TogglePlayerControllable(playerid, true);
-    CharacterCreate_Reset(playerid);
-    return list_add_arr(characters, character);
+    mysql_tquery(MySQL_GetHandle(), query);
+
+    character_index[playerid] =  list_add_arr(characters, character);
+    return character_index[playerid];
 }
 
 stock Character_Join(playerid, const name[])
@@ -133,6 +140,7 @@ stock Character_Join(playerid, const name[])
                 character_index[playerid] = iter_get_key(characters_index_iter);
                 
                 ClearChat(playerid);
+                CancelSelectTextDraw(playerid);
                 SetSpawnInfo(playerid, 0, character[characterSkinID], character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], 0, 0, 0, 0, 0, 0);
                 TogglePlayerSpectating(playerid, false);
                 SpawnPlayer(playerid);
@@ -327,13 +335,28 @@ hook OnPlayerClickPlayerTD(playerid, PlayerText:playertextid)
 
 hook OnPlayerDisconnect(playerid, reason)
 {
-    if(isPlayerConnected[playerid] == true)
+    if(PlayerIsConnected(playerid))
     {
+        new szString[64];
+        new szDisconnectReason[3][] =
+        {
+            "Timeout/Crash",
+            "Quit",
+            "Kick/Ban"
+        };
+
+        format(szString, 64, "Nguoi choi %s vua thoat khoi may chu (Ly do: %s)", Account_ReturnName(playerid, 0), szDisconnectReason[reason]);
+        ProxDetector(playerid, 10.0, COLOR_GREY, szString);
+        printf(szString);
+
         if(SaveCharacter(playerid) == 1) 
         {
             printf("Luu thanh cong nhan vat %s", Account_ReturnName(playerid));
+            character_index[playerid] = -1;
         }
         else printf("[ERROR] Luu khong thanh cong nhan vat %s", Account_ReturnName(playerid));
     }
+    else printf("[ERROR] Nguoi choi chua dang nhap.");
+
     return 1;
 }

@@ -72,6 +72,8 @@ public OnCharacterLoad()
         cache_get_value_int(index, "charWorldID", character[characterVW]);
         cache_get_value_float(index, "charHealth", character[characterHealth]);
         cache_get_value_float(index, "charArmour", character[characterArmour]);
+        cache_get_value_name(index, "charAccent", character[characterAccent], MAX_CHARACTER_ACCENT);
+        cache_get_value_name(index, "charDescribe", character[characterDescribe], MAX_CHARACTER_DESCRIBE);
 
         list_add_arr(characters, character);
     }

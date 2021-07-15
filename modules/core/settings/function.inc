@@ -1,4 +1,6 @@
 
+#include <Character/config_character>
+
 stock Account_ReturnName(playerid, _type = 1)
 {
     new name[MAX_PLAYER_NAME + 1];
@@ -17,6 +19,16 @@ stock Account_ReturnName(playerid, _type = 1)
     }
 
     return name;
+}
+
+stock bool:PlayerIsConnected(playerid)
+{
+	if(isPlayerConnected[playerid] == true)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 stock ClearChat(playerid)
@@ -48,6 +60,10 @@ stock Msg(playerid, type, const str[])
         case MSG_PREFIX_SUCCESS:
         {
             SendClientMessageStr(playerid, -1, str_format("[{0BFF19}FRP-Success{FFFFFF}] %s", str));
+        }
+        case MSG_PREFIX_USAGE:
+        {
+            SendClientMessageStr(playerid, COLOR_GREY, str_format("%s", str));
         }
     }
 
@@ -134,6 +150,11 @@ stock ProxDetector(playerid, Float:max_range, color, const string[], Float:max_r
 			continue;
 		}
 
+        if(!PlayerIsConnected(i))
+        {
+            continue;
+        }
+
 		range = GetPlayerDistanceFromPoint(i, pos_x, pos_y, pos_z);
 		if (range > max_range) {
 			continue;
@@ -195,4 +216,174 @@ stock bool:IsRoleplayName(const name[])
     }
 
     return false;
+}
+
+stock bool:CharCapitalization(string[])
+{
+    if(string[0] >= 97 && string[0] <= 122)
+    {
+        string[0] -= 32;
+        return true;
+    }
+
+    return false;
+}
+
+stock SendSplitString(playerid, type, string[])
+{
+    if(type != 1)
+    {
+        CharCapitalization(string);
+    }
+
+    switch(type)
+    {
+        // chat
+        case 0:
+        {
+            if(strlen(string) > MAX_CHAT_STRING)
+            {
+                new new_line[128], old_line[128];
+                strmid(new_line, string, MAX_CHAT_STRING, strlen(string));
+                strmid(old_line, string, 0, MAX_CHAT_STRING);
+
+                new cmd[144];
+                format(cmd, sizeof(cmd), "%s noi%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
+                ProxDetector(playerid, 10.0, -1, cmd);
+                
+                format(cmd, sizeof(cmd), "... %s", new_line);
+                ProxDetector(playerid, 10.0, -1, cmd);
+
+                return 1;
+            }
+
+            new cmd[144];
+            format(cmd, sizeof(cmd), "%s noi%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
+            ProxDetector(playerid, 10.0, -1, cmd);
+            SetPlayerChatBubble(playerid, cmd, -1, 10.0, 3000);
+            return 1;
+        }
+        // me
+        case 1:
+        {
+            if(strlen(string) > MAX_CHAT_STRING)    
+            {
+                new new_line[128], old_line[128];
+                strmid(new_line, string, MAX_CHAT_STRING, strlen(string));
+                strmid(old_line, string, 0, MAX_CHAT_STRING);
+
+                new cmd[144];
+                format(cmd, sizeof(cmd), "* %s %s...", Account_ReturnName(playerid, 0), old_line);
+                ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+                
+                format(cmd, sizeof(cmd), "... %s (( %s ))", new_line, Account_ReturnName(playerid, 0));
+                ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+
+                return 1;
+            }
+
+            new cmd[144];
+            format(cmd, sizeof(cmd), "* %s %s", Account_ReturnName(playerid, 0), string);
+            ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+            SetPlayerChatBubble(playerid, cmd, COLOR_ROLEPLAY, 10.0, 3000);
+
+            return 1;
+        }
+        // do
+        case 2:
+        {   
+            if(strlen(string) > MAX_CHAT_STRING)
+            {
+                new new_line[128], old_line[128];
+                strmid(new_line, string, MAX_CHAT_STRING, strlen(string));
+                strmid(old_line, string, 0, MAX_CHAT_STRING);
+
+                new cmd[144];
+                format(cmd, sizeof(cmd), "* %s...", old_line);
+                ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+                
+                format(cmd, sizeof(cmd), "... %s (( %s ))", new_line, Account_ReturnName(playerid, 0));
+                ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+
+                return 1;
+            }
+            
+            new cmd[144];
+            format(cmd, sizeof(cmd), "* %s (( %s ))", string, Account_ReturnName(playerid, 0));
+            ProxDetector(playerid, 10.0, COLOR_ROLEPLAY, cmd);
+            return 1;
+        }  
+        // low
+        case 3:
+        {
+            if(strlen(string) > MAX_CHAT_STRING)
+            {
+                new new_line[128], old_line[128];
+                strmid(new_line, string, MAX_CHAT_STRING, strlen(string));
+                strmid(old_line, string, 0, MAX_CHAT_STRING);
+
+                new cmd[144];
+                format(cmd, sizeof(cmd), "%s noi nho%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
+                ProxDetector(playerid, 5.0, -1, cmd);
+                
+                format(cmd, sizeof(cmd), "... %s", new_line);
+                ProxDetector(playerid, 5.0, -1, cmd);
+
+                return 1;
+            }
+
+            new cmd[144];
+            format(cmd, sizeof(cmd), "%s noi nho%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
+            ProxDetector(playerid, 5.0, -1, cmd);
+
+            return 1;
+        } 
+        // shout
+        case 4:
+        {
+            if(strlen(string) > MAX_CHAT_STRING)
+            {
+                new new_line[128], old_line[128];
+                strmid(new_line, string, MAX_CHAT_STRING, strlen(string));
+                strmid(old_line, string, 0, MAX_CHAT_STRING);
+
+                new cmd[144];
+                format(cmd, sizeof(cmd), "%s noi lon%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
+                ProxDetector(playerid, 15.0, -1, cmd);
+                
+                format(cmd, sizeof(cmd), "... %s", new_line);
+                ProxDetector(playerid, 15.0, -1, cmd);
+
+                return 1;
+            }
+
+            new cmd[144];
+            format(cmd, sizeof(cmd), "%s noi lon%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
+            ProxDetector(playerid, 15.0, -1, cmd);
+
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+stock Character_GetAccent(playerid)
+{
+    new string[144 + 24];
+    new character[E_CHARACTER_MEMORY];
+
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        if(!strcmp(character[characterAccent], "none"))
+        {   
+            format(string, sizeof(string), "");
+        }
+        else
+        {
+            format(string, sizeof(string), " [%s]", character[characterAccent]);
+        }
+    }
+
+    return string;
 }

@@ -104,19 +104,28 @@ Dialog:DIALOG_LOGIN_ACCOUNT(playerid, response, listitem, inputtext[])
             Dialog_Show(playerid, DIALOG_LOGIN_ACCOUNT, DIALOG_STYLE_PASSWORD, "Login Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau de dang nhap tai khoan", "Next", "Close");
         }
 
-        new account[E_PLAYER_ACCOUNT_MEMORY];
-        for(new Iter:account_index_iter = list_iter(accountJoined); iter_inside(account_index_iter); iter_move_next(account_index_iter))
+        Inputtext_AccountLogin[playerid][0] = EOS;        
+        strcat(Inputtext_AccountLogin[playerid], inputtext, sizeof(Inputtext_AccountLogin));
+        
+        new string[MAX_ACCOUNT_PASSWORD + 1];
+        if(strlen(inputtext) > 30)
         {
-            if(iter_get_arr_safe(account_index_iter, account))
-            {
-                if(!strcmp(account[accountName], Account_ReturnName(playerid, 1)))
-                {
-                    account_index[playerid] = iter_get_key(account_index_iter);
-                    bcrypt_check(inputtext, account[accountPassword], "OnPasswordChecked", "d", playerid);
-                    return 1;
-                }   
-            }
+            for(new i = 0; i < 30; i++)
+                strcat(string, "x");
         }
+
+        if(strlen(inputtext) <= 30)
+        {
+            for(new i = 0; i < strlen(inputtext); i++)
+                strcat(string, "x");
+        }
+
+        PlayerTextDrawHide(playerid, PlayerTD_AccountLogin[playerid][1]);
+        PlayerTextDrawSetString(playerid, PlayerTD_AccountLogin[playerid][1], string);
+        PlayerTextDrawShow(playerid, PlayerTD_AccountLogin[playerid][1]);
+
+        Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da nhap mat khau thanh cong!");
+        return 1;
     }
 
     
@@ -255,11 +264,16 @@ public OnPasswordChecked(playerid)
         new query[500];
         mysql_format(MySQL_GetHandle(), query, sizeof(query), "SELECT * FROM `characters`", account_inside[accountName]);
         mysql_tquery(MySQL_GetHandle(), query, "OnAccountShowList", "is", playerid, account_inside[accountName]);
+
+        F_GlobalTD_AccountLoginHide(playerid);
+        F_PlayerTD_AccountLoginHide(playerid);
+        is_pCheckPassword[playerid] = false;
     }
     else
     {
+        is_pCheckPassword[playerid] = false;
         Msg(playerid, MSG_PREFIX_ERROR, "Mat khau khong hop le, vui long thu lai!");
-        Dialog_Show(playerid, DIALOG_LOGIN_ACCOUNT, DIALOG_STYLE_PASSWORD, "Login Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau de dang nhap tai khoan", "Next", "Close");
+        return 1;
     }
 
     return 1;

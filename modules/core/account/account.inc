@@ -19,6 +19,7 @@ hook OnGameModeInit()
     accountJoined = list_new();  
     characters = list_new();
     
+    F_GlobalTD_AccountLogin();
     GlobalTD_CharacterCreate();  
     GlobalTD_CharacterSelectSkin();
     return 1;
@@ -37,13 +38,16 @@ hook OnGameModeExit()
 hook OnPlayerConnect(playerid)
 {
     isPlayerConnected[playerid] = false;
+    is_pCheckPassword[playerid] = false;
     character_index[playerid] = -1;
+    Inputtext_AccountLogin[playerid][0] = EOS;
     
     if(account_index[playerid] != -1)
     {
         account_index[playerid] = -1;
     }
 
+    SetPlayerColor(playerid, -1);
     TogglePlayerSpectating(playerid, true);
 
     new auth = IsAccountRegistered(playerid);
@@ -60,7 +64,53 @@ hook OnPlayerConnect(playerid)
     
     if(auth == ACCOUNT_LOGIN)
     {
-        Dialog_Show(playerid, DIALOG_LOGIN_ACCOUNT, DIALOG_STYLE_PASSWORD, "Login Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau de dang nhap tai khoan", "Next", "Close");
+        ClearChat(playerid);
+        F_GlobalTD_AccountLoginShow(playerid);
+        F_PlayerTD_AccountLogin(playerid);
+        SelectTextDraw(playerid, 0xFFFFF00FF);
+    }
+
+    return 1;
+}
+
+hook OnPlayerClickTextDraw(playerid, Text:clickedid)
+{
+    if(PlayerIsConnected(playerid) == false)
+    {
+        if(clickedid == GlobalTD_AccountLogin[2])
+        {
+            if(is_pCheckPassword[playerid] == false)
+            {
+                new account[E_PLAYER_ACCOUNT_MEMORY];
+                for(new Iter:account_index_iter = list_iter(accountJoined); iter_inside(account_index_iter); iter_move_next(account_index_iter))
+                {
+                    if(iter_get_arr_safe(account_index_iter, account))
+                    {
+                        if(!strcmp(account[accountName], Account_ReturnName(playerid, 1)))
+                        {
+                            is_pCheckPassword[playerid] = true;
+                            account_index[playerid] = iter_get_key(account_index_iter);
+                            bcrypt_check(Inputtext_AccountLogin[playerid], account[accountPassword], "OnPasswordChecked", "d", playerid);
+                            return 1;
+                        }   
+                    }
+                }
+            }
+            else MessageTDLine_ShowForPlayer(playerid, "Tai khoan cua ban dang trong qua trinh tim kiem, hay dot mot lat.", 2000);
+        }
+    }
+
+    return 1;
+}
+
+hook OnPlayerClickPlayerTD(playerid, PlayerText:playertextid)
+{
+    if(PlayerIsConnected(playerid) == false)
+    {
+        if(playertextid == PlayerTD_AccountLogin[playerid][1])
+        {
+            Dialog_Show(playerid, DIALOG_LOGIN_ACCOUNT, DIALOG_STYLE_PASSWORD, "Login Account "ACCOUNT_VERSION"", "Ban hay nhap mat khau de dang nhap tai khoan", "Next", "Close");
+        }
     }
 
     return 1;

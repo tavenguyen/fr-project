@@ -24,8 +24,10 @@
 			"uuid",
 			"mysql",
 			"PawnPlus",
+			"pawncmd",
 			"sscanf",
 			"bcrypt-sampp",
+			"streamer",
 			"samp-precise-timers"	
 		],
 		"gamemodes": [
@@ -84,7 +86,9 @@
 			"modules/configs",
 			"modules/core/settings",
 			"modules/core/database",
-			"modules/core/account"
+			"modules/core/account",
+			"modules/core/command",
+			"modules/core/staff"
 		],
 		"constants": {
 			"MAX_PLAYERS": "100",

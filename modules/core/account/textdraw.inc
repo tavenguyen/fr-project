@@ -1,8 +1,131 @@
+/*--- Project was created on 12:54 - 7/7/2021---*/
+//    Founder: Halosetoe                       //
+//    Leader Scripter: Halosetoe              //
+//    Scripter: Halosetoe                    //
+//    Game Content: Halosetoe               //
+/*--------- Freedom Roleplay v0.1 ---------*/
+
+
 new 
+    Text:GlobalTD_AccountLogin[3] = Text:INVALID_TEXT_DRAW,
     Text:GlobalTD_CharacterSelSkin[4] = Text:INVALID_TEXT_DRAW,
     Text:GlobalTD_Character[5] = Text:INVALID_TEXT_DRAW,
+    PlayerText:PlayerTD_AccountLogin[MAX_PLAYERS][2] = { {PlayerText:INVALID_PLAYER_TEXT_DRAW}, ... },
     PlayerText:PlayerTD_CharacterCreate[MAX_PLAYERS][7] = { {PlayerText:INVALID_PLAYER_TEXT_DRAW}, ... },
     PlayerText:PlayerTD_CharacterSelSkin[MAX_PLAYERS][1] = {PlayerText:INVALID_PLAYER_TEXT_DRAW, ...};
+
+stock F_GlobalTD_AccountLogin()
+{
+    GlobalTD_AccountLogin[0] = TextDrawCreate(47.400070, 90.250007, "mdl-2000:fc_register_login");
+    TextDrawLetterSize(GlobalTD_AccountLogin[0], 0.000000, 0.000000);
+    TextDrawTextSize(GlobalTD_AccountLogin[0], 181.000000, 96.000000);
+    TextDrawAlignment(GlobalTD_AccountLogin[0], 1);
+    TextDrawColor(GlobalTD_AccountLogin[0], -1);
+    TextDrawSetShadow(GlobalTD_AccountLogin[0], 0);
+    TextDrawSetOutline(GlobalTD_AccountLogin[0], 0);
+    TextDrawBackgroundColor(GlobalTD_AccountLogin[0], 255);
+    TextDrawFont(GlobalTD_AccountLogin[0], 4);
+    TextDrawSetProportional(GlobalTD_AccountLogin[0], 0);
+    TextDrawSetShadow(GlobalTD_AccountLogin[0], 0);
+
+    GlobalTD_AccountLogin[1] = TextDrawCreate(137.700103, 97.833328, "login");
+    TextDrawLetterSize(GlobalTD_AccountLogin[1], 0.286999, 1.109999);
+    TextDrawAlignment(GlobalTD_AccountLogin[1], 2);
+    TextDrawColor(GlobalTD_AccountLogin[1], -56);
+    TextDrawSetShadow(GlobalTD_AccountLogin[1], 0);
+    TextDrawSetOutline(GlobalTD_AccountLogin[1], 0);
+    TextDrawBackgroundColor(GlobalTD_AccountLogin[1], 255);
+    TextDrawFont(GlobalTD_AccountLogin[1], 2);
+    TextDrawSetProportional(GlobalTD_AccountLogin[1], 1);
+    TextDrawSetShadow(GlobalTD_AccountLogin[1], 0);
+
+    GlobalTD_AccountLogin[2] = TextDrawCreate(137.700103, 168.335327, "> LOGIN <");
+    TextDrawLetterSize(GlobalTD_AccountLogin[2], 0.286999, 1.109999);
+    TextDrawTextSize(GlobalTD_AccountLogin[2], 10.000000, 67.000000);
+    TextDrawAlignment(GlobalTD_AccountLogin[2], 2);
+    TextDrawColor(GlobalTD_AccountLogin[2], -56);
+    TextDrawUseBox(GlobalTD_AccountLogin[2], 1);
+    TextDrawBoxColor(GlobalTD_AccountLogin[2], 0);
+    TextDrawSetShadow(GlobalTD_AccountLogin[2], 0);
+    TextDrawSetOutline(GlobalTD_AccountLogin[2], 0);
+    TextDrawBackgroundColor(GlobalTD_AccountLogin[2], 255);
+    TextDrawFont(GlobalTD_AccountLogin[2], 2);
+    TextDrawSetProportional(GlobalTD_AccountLogin[2], 1);
+    TextDrawSetShadow(GlobalTD_AccountLogin[2], 0);
+    TextDrawSetSelectable(GlobalTD_AccountLogin[2], true);
+}
+
+stock F_PlayerTD_AccountLogin(playerid)
+{
+    PlayerTD_AccountLogin[playerid][0] = CreatePlayerTextDraw(playerid, 138.100128, 121.632965, "KeAndre_Richardson");
+    PlayerTextDrawLetterSize(playerid, PlayerTD_AccountLogin[playerid][0], 0.286999, 1.109999);
+    PlayerTextDrawAlignment(playerid, PlayerTD_AccountLogin[playerid][0], 2);
+    PlayerTextDrawColor(playerid, PlayerTD_AccountLogin[playerid][0], -56);
+    PlayerTextDrawUseBox(playerid, PlayerTD_AccountLogin[playerid][0], 1);
+    PlayerTextDrawBoxColor(playerid, PlayerTD_AccountLogin[playerid][0], 0);
+    PlayerTextDrawSetShadow(playerid, PlayerTD_AccountLogin[playerid][0], 0);
+    PlayerTextDrawSetOutline(playerid, PlayerTD_AccountLogin[playerid][0], 0);
+    PlayerTextDrawBackgroundColor(playerid, PlayerTD_AccountLogin[playerid][0], 255);
+    PlayerTextDrawFont(playerid, PlayerTD_AccountLogin[playerid][0], 1);
+    PlayerTextDrawSetProportional(playerid, PlayerTD_AccountLogin[playerid][0], 1);
+    PlayerTextDrawSetShadow(playerid, PlayerTD_AccountLogin[playerid][0], 0);
+
+    PlayerTD_AccountLogin[playerid][1] = CreatePlayerTextDraw(playerid, 138.100128, 144.133850, "CLICK HERE");
+    PlayerTextDrawLetterSize(playerid, PlayerTD_AccountLogin[playerid][1], 0.286999, 1.109999);
+    PlayerTextDrawTextSize(playerid, PlayerTD_AccountLogin[playerid][1], 10.000000, 118.000000);
+    PlayerTextDrawAlignment(playerid, PlayerTD_AccountLogin[playerid][1], 2);
+    PlayerTextDrawColor(playerid, PlayerTD_AccountLogin[playerid][1], -56);
+    PlayerTextDrawUseBox(playerid, PlayerTD_AccountLogin[playerid][1], 1);
+    PlayerTextDrawBoxColor(playerid, PlayerTD_AccountLogin[playerid][1], 0);
+    PlayerTextDrawSetShadow(playerid, PlayerTD_AccountLogin[playerid][1], 0);
+    PlayerTextDrawSetOutline(playerid, PlayerTD_AccountLogin[playerid][1], 0);
+    PlayerTextDrawBackgroundColor(playerid, PlayerTD_AccountLogin[playerid][1], 255);
+    PlayerTextDrawFont(playerid, PlayerTD_AccountLogin[playerid][1], 1);
+    PlayerTextDrawSetProportional(playerid, PlayerTD_AccountLogin[playerid][1], 1);
+    PlayerTextDrawSetShadow(playerid, PlayerTD_AccountLogin[playerid][1], 0);
+    PlayerTextDrawSetSelectable(playerid, PlayerTD_AccountLogin[playerid][1], true);
+
+    PlayerTextDrawSetString(playerid, PlayerTD_AccountLogin[playerid][0], Account_ReturnName(playerid, 1));
+
+    for(new i = 0; i < 2; i++)
+    {
+        PlayerTextDrawShow(playerid, PlayerTD_AccountLogin[playerid][i]);
+    }
+
+    return 1;
+}
+
+stock F_GlobalTD_AccountLoginShow(playerid)
+{
+    for(new i = 0; i < sizeof(GlobalTD_AccountLogin); i++)
+    {
+        TextDrawShowForPlayer(playerid, GlobalTD_AccountLogin[i]);
+    }
+
+    return 1;
+}
+
+stock F_GlobalTD_AccountLoginHide(playerid)
+{
+    for(new i = 0; i < sizeof(GlobalTD_AccountLogin); i++)
+    {
+        TextDrawHideForPlayer(playerid, GlobalTD_AccountLogin[i]);
+    }
+
+    return 1;
+}
+
+
+stock F_PlayerTD_AccountLoginHide(playerid)
+{
+    for(new i = 0; i < sizeof(PlayerTD_AccountLogin); i++)
+    {
+        PlayerTextDrawHide(playerid, PlayerTD_AccountLogin[playerid][i]);
+        PlayerTextDrawDestroy(playerid, PlayerTD_AccountLogin[playerid][i]);
+    }
+
+    return 1;
+}
 
 stock GlobalTD_CharacterCreate()
 {
