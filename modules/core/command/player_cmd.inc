@@ -336,7 +336,7 @@ CMD:aw(playerid, params[])
 {
     new targetid, string[256];
 
-    new error;
+    new error, fixloi;
 
     if (array_AutoToggle[playerid][LOW_TOGGLE]){
         SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong thi tham khi ban chua tat tu dong noi nho.");
