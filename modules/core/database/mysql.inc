@@ -7,7 +7,7 @@
 
 #define             FCR_LOCALHOST                "localhost"
 #define             FCR_SQL_USER                 "root"
-#define             FCR_PASSWORD                 ""
+#define             FCR_PASSWORD                 "123456" // Add password if exist
 #define             FCR_DATABASE                 "fcrp-project"      
 
 static MySQL:mysql_handle;

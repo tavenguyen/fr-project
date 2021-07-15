@@ -287,3 +287,78 @@ CMD:mota(playerid, params[])
 
     return 0;
 }
+
+CMD:al(playerid, params[])
+{
+    if (array_AutoToggle[playerid][SHOUT_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong noi nho khi ban chua tat tu dong het to.");
+    }
+    else if (array_AutoToggle[playerid][WHISPER_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong noi nho khi ban chua tat tu dong thi tham.");
+    }
+    else {
+        array_AutoToggle[playerid][LOW_TOGGLE] = !array_AutoToggle[playerid][LOW_TOGGLE];
+
+        if (array_AutoToggle[playerid][LOW_TOGGLE]) {
+            SendClientMessage(playerid, COLOR_GREY, "Ban da bat che do tu dong noi nho.");
+        }
+        else {
+            SendClientMessage(playerid, COLOR_GREY, "Ban da tat che do tu dong noi nho.");
+        }
+    }
+
+    return 1;
+}
+
+CMD:as(playerid, params[])
+{
+    if (array_AutoToggle[playerid][LOW_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong het to khi ban chua tat tu dong noi nho.");
+    }
+    else if (array_AutoToggle[playerid][WHISPER_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong het to khi ban chua tat tu dong thi tham.");
+    }
+    else {
+        array_AutoToggle[playerid][SHOUT_TOGGLE] = !array_AutoToggle[playerid][SHOUT_TOGGLE];
+
+        if (array_AutoToggle[playerid][SHOUT_TOGGLE]) {
+            SendClientMessage(playerid, COLOR_GREY, "Ban da bat che do tu dong het to.");
+        }
+        else {
+            SendClientMessage(playerid, COLOR_GREY, "Ban da tat che do tu dong het to.");
+        }
+    }
+
+    return 1;
+}
+
+CMD:aw(playerid, params[])
+{
+    new targetid, string[256];
+
+    if (array_AutoToggle[playerid][LOW_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong thi tham khi ban chua tat tu dong noi nho.");
+    }
+    else if (array_AutoToggle[playerid][SHOUT_TOGGLE]){
+        SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong thi tham khi ban chua tat tu dong het to.");
+    }
+    else {
+
+        if (sscanf(params, "i", targetid)){
+            return Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /aw(hisper) [targetid].");
+        }
+        else {
+            array_AutoToggle[playerid][SHOUT_TOGGLE] = !array_AutoToggle[playerid][SHOUT_TOGGLE];
+
+            if (array_AutoToggle[playerid][SHOUT_TOGGLE]) {
+                format(string, sizeof(string), "Ban da bat che do tu dong thi tham voi %s", Account_ReturnName(playerid, 0));
+                SendClientMessage(playerid, COLOR_GREY, string);
+            }
+            else {
+                SendClientMessage(playerid, COLOR_GREY, "Ban da tat che do tu dong thi tham.");
+            }
+        }
+    }
+
+    return 1;
+}

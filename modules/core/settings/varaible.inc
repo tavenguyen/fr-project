@@ -10,3 +10,14 @@ enum _:MSG_PREFIX
     MSG_PREFIX_SUCCESS,
     MSG_PREFIX_USAGE
 }
+
+enum _:AutoToggle
+{
+    LOW_TOGGLE,
+    SHOUT_TOGGLE,
+    WHISPER_TOGGLE,
+    CAR_WHISPER_TOGGLE
+}
+
+new bool:array_AutoToggle[MAX_PLAYERS][AutoToggle];
+// new bool:bLowToggle = false;
