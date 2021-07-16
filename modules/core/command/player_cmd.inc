@@ -148,12 +148,17 @@ CMD:b(playerid, params[])
 
 CMD:accent(playerid, params[])
 {
-    new choice[25];
+    new choice[MAX_CHARACTER_ACCENT + 1];
     if(sscanf(params, "s[24]", choice))
     {
         Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /accent [giong noi]");
         Msg(playerid, MSG_PREFIX_USAGE, "Co the /accent none de loai bo giong noi.");
         return 1;
+    }
+
+    if(strlen(choice) > MAX_CHARACTER_ACCENT)
+    {
+        return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the dat qua gioi han cua Accent.");
     }
 
     new character[E_CHARACTER_MEMORY];
@@ -239,6 +244,11 @@ CMD:mota(playerid, params[])
         {
             Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /mota myself [mo ta ban than cua ban]");
             return 1;
+        }
+
+        if(strlen(str_describe) > MAX_CHARACTER_DESCRIBE)
+        {
+            return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong duoc nhap mo ta qua so luong quy dinh.");
         }
 
         new character[E_CHARACTER_MEMORY];

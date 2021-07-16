@@ -21,7 +21,6 @@ hook OnPlayerText(playerid, text[])
 {
     if(isPlayerConnected[playerid] == true)
     {
-
         if (array_AutoToggle[playerid][LOW_TOGGLE]) {
             SendSplitString(playerid, 3, text);
         }

@@ -398,3 +398,17 @@ stock GetAdminLevel(playerid)
 
     return 0;
 }
+
+stock Account_ReturnMAName(playerid)
+{
+    new string[128];
+    format(string, sizeof(string), "");
+
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        format(string, sizeof(string), "%s", character[characterAccount]);
+    }
+    
+    return string;
+}
