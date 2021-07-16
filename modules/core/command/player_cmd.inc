@@ -79,13 +79,13 @@ CMD:whisper(playerid, params[])
         strmid(old_line, choice, 0, MAX_CHAT_STRING);
 
         new cmd[144];
-        format(cmd, sizeof(cmd), "Ban dang tham thi voi %s:%s%s...", Account_ReturnName(targetid, 0), Character_GetAccent(playerid), old_line);
+        format(cmd, sizeof(cmd), "Ban dang tham thi voi %s%s: %s...", Account_ReturnName(targetid, 0), Character_GetAccent(playerid), old_line);
         SendClientMessage(playerid, COLOR_YELLOW, cmd);
         
         format(cmd, sizeof(cmd), "... %s", new_line);
         SendClientMessage(playerid, COLOR_YELLOW, cmd);
 
-        format(cmd, sizeof(cmd), "%s dang tham thi voi ban:%s%s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
+        format(cmd, sizeof(cmd), "%s dang tham thi voi ban%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
         SendClientMessage(targetid, COLOR_YELLOW, cmd);
 
         format(cmd, sizeof(cmd), "... %s", new_line);
@@ -95,10 +95,10 @@ CMD:whisper(playerid, params[])
     }
 
     new cmd[144];
-    format(cmd, sizeof(cmd), "Ban dang tham thi voi %s:%s%s", Account_ReturnName(targetid, 0), Character_GetAccent(playerid), choice);
+    format(cmd, sizeof(cmd), "Ban dang tham thi voi %s%s: %s", Account_ReturnName(targetid, 0), Character_GetAccent(playerid), choice);
     SendClientMessage(playerid, COLOR_YELLOW, cmd);
 
-    format(cmd, sizeof(cmd), "%s dang tham thi voi ban:%s%s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), choice);
+    format(cmd, sizeof(cmd), "%s dang tham thi voi ban%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), choice);
     SendClientMessage(targetid, COLOR_YELLOW, cmd);
 
     return 1;
@@ -336,8 +336,6 @@ CMD:aw(playerid, params[])
 {
     new targetid, string[256];
 
-    new error, fixloi;
-
     if (array_AutoToggle[playerid][LOW_TOGGLE]){
         SendClientMessage(playerid, COLOR_GREY, "Khong the bat tu dong thi tham khi ban chua tat tu dong noi nho.");
     }
@@ -347,17 +345,38 @@ CMD:aw(playerid, params[])
     else {
 
         if (sscanf(params, "i", targetid)){
+            array_AutoToggle[playerid][WHISPER_TOGGLE] = false;
             return Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /aw(hisper) [targetid].");
         }
         else {
-            array_AutoToggle[playerid][SHOUT_TOGGLE] = !array_AutoToggle[playerid][SHOUT_TOGGLE];
+            // Get position of player.
+            new Float:x, Float:y, Float:z;
+            GetPlayerPos(targetid, x, y, z);
 
-            if (array_AutoToggle[playerid][SHOUT_TOGGLE]) {
-                format(string, sizeof(string), "Ban da bat che do tu dong thi tham voi %s", Account_ReturnName(playerid, 0));
-                SendClientMessage(playerid, COLOR_GREY, string);
+            // Check if Player connected
+            if(!PlayerIsConnected(targetid))
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Nguoi choi nay hien tai khong co trong may chu.");
+            }
+            else if(playerid == targetid)
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the tu whisper cho ban than cua ban.");
+            }
+            else if(!IsPlayerInRangeOfPoint(playerid, 2.0, x, y, z)) 
+            {
+                return Msg(playerid, MSG_PREFIX_ERROR, "Nguoi choi khong o gan ban, vui long thu lai.");
             }
             else {
-                SendClientMessage(playerid, COLOR_GREY, "Ban da tat che do tu dong thi tham.");
+                array_AutoToggle[playerid][WHISPER_TOGGLE] = !array_AutoToggle[playerid][WHISPER_TOGGLE];
+                iWhisperTargetID[playerid] = targetid;
+
+                if (array_AutoToggle[playerid][WHISPER_TOGGLE]) {
+                    format(string, sizeof(string), "Ban da bat che do tu dong thi tham voi %s", Account_ReturnName(targetid, 0));
+                    SendClientMessage(playerid, COLOR_GREY, string);
+                }
+                else {
+                    SendClientMessage(playerid, COLOR_GREY, "Ban da tat che do tu dong thi tham.");
+                }
             }
         }
     }

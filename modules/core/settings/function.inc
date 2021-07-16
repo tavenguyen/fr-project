@@ -348,7 +348,7 @@ stock SendSplitString(playerid, type, string[])
                 strmid(old_line, string, 0, MAX_CHAT_STRING);
 
                 new cmd[144];
-                format(cmd, sizeof(cmd), "%s noi lon%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
+                format(cmd, sizeof(cmd), "%s het to%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
                 ProxDetector(playerid, 15.0, -1, cmd);
                 
                 format(cmd, sizeof(cmd), "... %s", new_line);
@@ -358,7 +358,7 @@ stock SendSplitString(playerid, type, string[])
             }
 
             new cmd[144];
-            format(cmd, sizeof(cmd), "%s noi lon%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
+            format(cmd, sizeof(cmd), "%s het to%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
             ProxDetector(playerid, 15.0, -1, cmd);
 
             return 1;
@@ -386,4 +386,15 @@ stock Character_GetAccent(playerid)
     }
 
     return string;
+}
+
+stock GetAdminLevel(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        return character[characterAdminLevel];
+    }
+
+    return 0;
 }
