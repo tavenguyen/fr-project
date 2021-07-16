@@ -44,3 +44,47 @@ ACMD[10]:makeadmin(playerid, params[])
 
     return 0;
 }
+
+CMD:admins(playerid, params[])
+{
+    new character[E_CHARACTER_MEMORY];
+    new bool:hasAdmin = false;
+
+    foreach(new i : Player)
+    {
+        if(list_get_arr_safe(characters, character_index[i], character))
+        {
+            if(character[characterAdminLevel] != 0)
+            {
+                if(hasAdmin == false)
+                {
+                    SendClientMessage(playerid, -1, "Ban quan tri hien tai dang co mat trong may chu");
+                    SendClientMessage(playerid, -1, "---------------------------------------------------------------------");
+
+                    hasAdmin = true;
+                }
+                SendClientMessageStr(playerid, -1, str_format("ID: %d | Admin Level: %d | Admin Name: %s | Onduty: Yes.", i, character[characterAdminLevel], character[characterAccount]));
+            }
+        }
+    }
+
+    if(hasAdmin == false)
+    {
+        SendClientMessage(playerid, -1, "Khong co ban quan tri nao trong may chu.");
+    }
+
+    return 1;
+}
+
+CMD:makeadminao(playerid, params[])
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        character[characterAdminLevel] = strval(params);
+        list_set_arr(characters, character_index[playerid], character);
+    }
+
+    return 1;
+}
+
