@@ -30,8 +30,6 @@ enum
     skinColor_black
 }
 
-new lunarMonth[] = {1, 3, 5, 7, 8, 10, 12};
-
 enum _:E_CHARACTER_MEMORY
 {
     characterAccount[MAX_PLAYER_NAME + 1],
