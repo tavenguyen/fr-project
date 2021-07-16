@@ -45,4 +45,16 @@ ACMD[10]:makeadmin(playerid, params[])
 
     return 0;
 }
->>>>>>> function
+
+CMD:makeadminao(playerid, params[])
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        character[characterAdminLevel] = strval(params);
+        list_set_arr(characters, character_index[playerid], character);
+    }
+
+    return 1;
+}
+
