@@ -14,6 +14,11 @@ ACMD[10]:makeadmin(playerid, params[])
         return Msg(playerid, MSG_PREFIX_ERROR, "Nguoi choi nay khong co trong may chu, vui long thu lai.");
     }
 
+    if(playerid == targetid)
+    {
+        return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the tu chinh cap do ban quan tri cho ban than cua minh.");
+    }
+
     if(adminlevel < 0 || adminlevel > 10)
     {
         return Msg(playerid, MSG_PREFIX_ERROR, "Admin Level nay khong hop le, vui long thu lai.");
@@ -44,6 +49,37 @@ ACMD[10]:makeadmin(playerid, params[])
     }
 
     return 0;
+}
+
+CMD:admins(playerid, params[])
+{
+    SendClientMessage(playerid, -1, "Ban quan tri hien tai dang co mat trong may chu");
+    SendClientMessage(playerid, -1, "-------------------------------------------------");
+
+    new character[E_CHARACTER_MEMORY];
+    new bool:hasAdmin = false;
+
+    foreach(new i : Player)
+    {
+        if(list_get_arr_safe(characters, character_index[i], character))
+        {
+            if(character[characterAdminLevel] != 0)
+            {
+                SendClientMessageStr(playerid, -1, str_format("ID: %d | Admin Level: %d | Admin Name: %s | Onduty: Yes.", i, character[characterAdminLevel], character[characterAccount]));
+                if(hasAdmin == false)
+                {
+                    hasAdmin = true;
+                }
+            }
+        }
+    }
+
+    if(hasAdmin == false)
+    {
+        SendClientMessage(playerid, -1, "Khong co ban quan tri nao trong may chu.");
+    }
+
+    return 1;
 }
 
 CMD:makeadminao(playerid, params[])
