@@ -138,25 +138,68 @@ stock Character_Join(playerid, const name[])
             {
                 isPlayerConnected[playerid] = true;
                 character_index[playerid] = iter_get_key(characters_index_iter);
-                
+
                 ClearChat(playerid);
                 CancelSelectTextDraw(playerid);
-                SetSpawnInfo(playerid, 0, character[characterSkinID], character[characterPosX], character[characterPosY], character[characterPosZ], character[characterFacingAngle], 0, 0, 0, 0, 0, 0);
-                TogglePlayerSpectating(playerid, false);
-                SpawnPlayer(playerid);
-                SetPlayerName(playerid, character[characterName]);
-                SetPlayerPos(playerid, character[characterPosX], character[characterPosY], character[characterPosZ]);
-                SetPlayerInterior(playerid, character[characterInt]);
-                SetPlayerVirtualWorld(playerid, character[characterVW]);
-                SetPlayerHealth(playerid, character[characterHealth]);
-                SetPlayerArmour(playerid, character[characterArmour]);
-                SetCameraBehindPlayer(playerid);
-                FadePlayerScreen(playerid, 0, _, 2000);
-
-                wait_ms(2000);
-                Msg(playerid, MSG_PREFIX_SUCCESS, "Chao mung ban den voi may chu.");
+                mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `characters`", "OnCharacterReconnect", "dds", playerid, character_index[playerid], name);
                 return 1;
             }
+        }
+    }
+
+    return 0;
+}
+
+forward OnCharacterReconnect(playerid, index, const name[]);
+public OnCharacterReconnect(playerid, index, const name[])
+{
+    new character_inside[E_CHARACTER_MEMORY];
+    new rows = cache_num_rows();
+
+    new character_temp[E_CHARACTER_MEMORY];
+    for(new i = 0; i < rows; i++)
+    {
+        cache_get_value_name(i, "charName", character_temp[characterName], MAX_PLAYER_NAME + 1);
+        if(!strcmp(character_temp[characterName], name))
+        {
+            cache_get_value_name(i, "charAccount", character_inside[characterAccount], MAX_PLAYER_NAME + 1);
+            cache_get_value_name(i, "charName", character_inside[characterName], MAX_PLAYER_NAME + 1);
+            cache_get_value_name(i, "charUUID", character_inside[characterUUID], UUID_LEN);
+            cache_get_value_int(i, "charAge", character_inside[characterAge]);
+            cache_get_value_int(i, "charBirthdayDay", character_inside[characterBirthday_Day]);
+            cache_get_value_int(i, "charBirthdayMonth", character_inside[characterBirthday_Month]);
+            cache_get_value_int(i, "charBirthdayYear", character_inside[characterBirthday_Year]);
+            cache_get_value_int(i, "charGender", character_inside[characterGender]);
+            cache_get_value_int(i, "charSkinColor", character_inside[characterSkinColor]);
+            cache_get_value_int(i, "charSkin", character_inside[characterSkinID]);
+            cache_get_value_float(i, "charPosX", character_inside[characterPosX]);
+            cache_get_value_float(i, "charPosY", character_inside[characterPosY]);
+            cache_get_value_float(i, "charPosZ", character_inside[characterPosZ]);
+            cache_get_value_float(i, "charAngle", character_inside[characterFacingAngle]);
+            cache_get_value_int(i, "charInteriorID", character_inside[characterInt]);
+            cache_get_value_int(i, "charWorldID", character_inside[characterVW]);   
+            cache_get_value_float(i, "charHealth", character_inside[characterHealth]);
+            cache_get_value_float(i, "charArmour", character_inside[characterArmour]);
+            list_set_arr(characters, index, character_inside);
+
+            SetSpawnInfo(playerid, 0, character_inside[characterSkinID], character_inside[characterPosX], character_inside[characterPosY], character_inside[characterPosZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
+            SpawnPlayer(playerid);
+            TogglePlayerSpectating(playerid, false);
+
+            SetPlayerName(playerid, name);
+           
+            SetPlayerInterior(playerid, character_inside[characterInt]);
+            SetPlayerVirtualWorld(playerid, character_inside[characterVW]);
+            
+            SetPlayerHealth(playerid, character_inside[characterHealth]);
+            SetPlayerArmour(playerid, character_inside[characterArmour]);
+            
+            FadePlayerScreen(playerid, 0, _, 2000);
+
+            wait_ms(2000);
+            
+            Msg(playerid, MSG_PREFIX_SUCCESS, "Chao mung ban den voi may chu.");
+            return 1;
         }
     }
 
@@ -181,12 +224,14 @@ SaveCharacter(playerid)
         GetPlayerArmour(playerid, armour);
 
         new query[500];
-        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charHealth` = %.4f, `charArmour` = %.4f, `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'",
-            health, armour, skinid, x, y, z, angle, int, vw, character[characterUUID]);
+        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d, `charHealth` = %.4f, `charArmour` = %.4f WHERE `charUUID` = '%e'",
+            skinid, x, y, z, angle, int, vw, health, armour, character[characterUUID]);
         mysql_tquery(MySQL_GetHandle(), query);
+        printf(query);
 
         return 1;
     }
+
     return 0;
 }
 
@@ -337,7 +382,7 @@ hook OnPlayerDisconnect(playerid, reason)
 {
     if(PlayerIsConnected(playerid))
     {
-        new szString[64];
+        new szString[100];
         new szDisconnectReason[3][] =
         {
             "Timeout/Crash",
@@ -345,7 +390,7 @@ hook OnPlayerDisconnect(playerid, reason)
             "Kick/Ban"
         };
 
-        format(szString, 64, "Nguoi choi %s vua thoat khoi may chu (Ly do: %s)", Account_ReturnName(playerid, 0), szDisconnectReason[reason]);
+        format(szString, sizeof(szString), "Nguoi choi %s vua thoat khoi may chu (Ly do: %s)", Account_ReturnName(playerid, 0), szDisconnectReason[reason]);
         ProxDetector(playerid, 10.0, COLOR_GREY, szString);
         printf(szString);
 
