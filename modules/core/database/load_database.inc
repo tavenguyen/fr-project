@@ -1,10 +1,13 @@
 #include <account>
+#include <config_door>
 
 #include <YSI_Coding\y_hooks>
 hook OnGameModeInit()
 {
+    entrances_list = list_new();
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `accounts`", "OnAccountLoad");
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `characters`", "OnCharacterLoad");
+    mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `doors`", "OnDoorLoad");
     return 1;
 }
 
@@ -74,10 +77,46 @@ public OnCharacterLoad()
         cache_get_value_float(index, "charArmour", character[characterArmour]);
         cache_get_value_name(index, "charAccent", character[characterAccent], MAX_CHARACTER_ACCENT);
         cache_get_value_name(index, "charDescribe", character[characterDescribe], MAX_CHARACTER_DESCRIBE);
+        cache_get_value_int(index, "charAdmin", character[characterAdminLevel]);
 
         list_add_arr(characters, character);
     }
     
-    printf("Loaded  %d characters from database.", rows);
+    printf("Loaded %d characters from database.", rows);
+    return 1;
+}
+
+forward OnDoorLoad();
+public OnDoorLoad()
+{
+    new rows = cache_num_rows();
+    new door[E_DOORS_MEMORY];
+
+    for(new index = 0; index < rows; index++)
+    {
+        cache_get_value_name(index, "doorUUID", door[doorUUID], UUID_LEN);
+        cache_get_value_name(index, "doorName", door[doorName], MAX_DOOR_NAME);
+        cache_get_value_name(index, "doorOwnedName", door[doorOwnedName], MAX_PLAYER_NAME + 1);
+        cache_get_value_int(index, "doorIsSold", door[is_Door_sold]);
+        cache_get_value_int(index, "doorPrice", door[doorPrice]);
+        cache_get_value_int(index, "doorLocked", door[is_Door_locked]);
+        cache_get_value_int(index, "doorExtIconType", door[doorExt_IconType]);
+        cache_get_value_float(index, "doorExt_posX", door[doorExt_posX]);
+        cache_get_value_float(index, "doorExt_posY", door[doorExt_posY]);
+        cache_get_value_float(index, "doorExt_posZ", door[doorExt_posZ]);
+        cache_get_value_int(index, "doorExt_Int", door[doorExt_Int]);
+        cache_get_value_int(index, "doorExt_VW", door[doorExt_VW]);
+        cache_get_value_float(index, "doorInt_posX", door[doorInt_posX]);
+        cache_get_value_float(index, "doorInt_posY", door[doorInt_posY]);
+        cache_get_value_float(index, "doorInt_posZ", door[doorInt_posZ]);
+        cache_get_value_int(index, "doorInt_Int", door[doorInt_Int]);
+        cache_get_value_int(index, "doorInt_VW", door[doorInt_VW]);
+
+        door[doorID_Pickup] = CreateDynamicPickup(door[doorExt_IconType], 0, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_VW], door[doorExt_Int]);
+        new door_index = list_add_arr(entrances_list, door);
+        Door_FormatInformation(door_index);
+    }
+
+    printf("Loaded %d doors from database.", rows);
     return 1;
 }

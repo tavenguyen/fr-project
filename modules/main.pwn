@@ -46,7 +46,11 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <account>
 #include <player_cmd>
 
+#include <admin\admin_function>
 #include <admin\admin_cmd>
+
+#include <config_door>
+#include <main_door>
 
 main(){}
 
@@ -61,15 +65,4 @@ public OnGameModeInit()
 	EnableStuntBonusForAll(0);
 	EnableVehicleFriendlyFire();
     return 1;
-}
-
-public OnGameModeExit()
-{
-	foreach(new i : Player)
-	{
-		SaveCharacter(i);
-		Kick(i);
-	}
-
-	return 1;
 }

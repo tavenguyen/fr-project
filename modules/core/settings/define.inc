@@ -7,3 +7,6 @@
 #define                 MAX_CHAT_STRING                         80  
 #define                 MAX_CHARACTER_ACCENT                    24
 #define                 MAX_CHARACTER_DESCRIBE                  128
+
+#define                 MAX_DOOR_NAME                           30
+#define                 MAX_DOOR_PRICE                          99999999

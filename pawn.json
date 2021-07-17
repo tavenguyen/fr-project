@@ -88,7 +88,8 @@
 			"modules/core/database",
 			"modules/core/account",
 			"modules/core/command",
-			"modules/core/staff"
+			"modules/core/staff",
+			"modules/core/doors"
 		],
 		"constants": {
 			"MAX_PLAYERS": "100",
