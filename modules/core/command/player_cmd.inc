@@ -1,9 +1,9 @@
-/*--- Project was created on 12:54 - 7/7/2021---*/
-//    Founder: Halosetoe                       //
-//    Leader Scripter: Halosetoe              //
-//    Scripter: Halosetoe                    //
-//    Game Content: Halosetoe               //
-/*--------- Freedom Roleplay v0.1 ---------*/
+/*------ Project was created on 12:54 - 7/7/2021-----*/
+//    Founder: Halosetoe                            //
+//    Leader Scripter: Halosetoe                    //
+//    Scripter: Halosetoe, Huynh                    //
+//    Game Content: Halosetoe                       //
+/*-------------- Freedom Roleplay v0.1 --------------*/
 
 public OnPlayerCommandText(playerid, cmdtext[])
 {
@@ -37,6 +37,7 @@ CMD:low(playerid, params[])
     SendSplitString(playerid, 3, string);
     return 1;
 }
+alias:low("l")
 
 CMD:shout(playerid, params[])
 {
@@ -45,6 +46,7 @@ CMD:shout(playerid, params[])
     SendSplitString(playerid, 4, string);
     return 1;
 }
+alias:shout("s")
 
 CMD:whisper(playerid, params[])
 {
@@ -103,6 +105,7 @@ CMD:whisper(playerid, params[])
 
     return 1;
 }
+alias:whisper("w")
 
 CMD:pm(playerid, params[])
 {
@@ -390,6 +393,37 @@ CMD:aw(playerid, params[])
             }
         }
     }
+
+    return 1;
+}
+
+CMD:admins(playerid, params[])
+{
+    new character[E_CHARACTER_MEMORY];
+    new bool:hasAdmin = false;
+
+    foreach(new i : Player)
+    {
+        if(list_get_arr_safe(characters, character_index[i], character))
+        {
+            if(character[characterAdminLevel] != 0)
+            {
+                if(hasAdmin == false)
+                {
+                    SendClientMessage(playerid, -1, "{19702e}Ban quan tri hien tai dang co mat trong may chu:");
+
+                    hasAdmin = true;
+                }
+                
+                SendClientMessageStr(playerid, -1, str_format("{d4000e}ID:{ffffff} %d | {d4000e}Admin Level:{ffffff} %d | {d4000e}Admin Name:{ffffff} %s | {d4000e}Onduty:{ffffff} %s", i, character[characterAdminLevel], character[characterAccount], Admin_ReturnStrDuty(i)));
+            }
+        }
+    }
+
+    if(hasAdmin == false)
+    {
+        SendClientMessage(playerid, -1, "{19702e}Khong co ban quan tri nao trong may chu.");
+    }   
 
     return 1;
 }

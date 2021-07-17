@@ -180,6 +180,9 @@ public OnCharacterReconnect(playerid, index, const name[])
             cache_get_value_int(i, "charWorldID", character_inside[characterVW]);   
             cache_get_value_float(i, "charHealth", character_inside[characterHealth]);
             cache_get_value_float(i, "charArmour", character_inside[characterArmour]);
+            cache_get_value_int(index, "charAdmin", character_inside[characterAdminLevel]);
+            
+            character_inside[isAdminOnduty] = false;
             list_set_arr(characters, index, character_inside);
 
             SetSpawnInfo(playerid, 0, character_inside[characterSkinID], character_inside[characterPosX], character_inside[characterPosY], character_inside[characterPosZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
@@ -223,11 +226,12 @@ SaveCharacter(playerid)
         GetPlayerHealth(playerid, health);
         GetPlayerArmour(playerid, armour);
 
-        new query[500];
+        new query[1000];
         mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charSkin` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charAngle` = %.4f, `charInteriorID` = %d, `charWorldID` = %d, `charHealth` = %.4f, `charArmour` = %.4f WHERE `charUUID` = '%e'",
             skinid, x, y, z, angle, int, vw, health, armour, character[characterUUID]);
+
         mysql_tquery(MySQL_GetHandle(), query);
-        printf(query);
+        printf("[debug] %s", query);
 
         return 1;
     }
