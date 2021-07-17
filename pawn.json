@@ -13,34 +13,38 @@
 		"Southclaws/pawn-uuid",
 		"bmisiak/samp-precise-timers",
 		"pawn-lang/YSI-Includes@5.x",
-		"IllidanS4/PawnPlus"
+		"IllidanS4/PawnPlus",
+		"AGraber/samp-async-dialogs"
 	],
 	"local": true,
 	"runtime": {
 		"version": "0.3.DL",
 		"mode": "server",
 		"echo": "Loading configuration...",
+		"gamemodes": [
+			"main"
+		],
 		"plugins": [
 			"uuid",
 			"mysql",
 			"PawnPlus",
 			"pawncmd",
 			"sscanf",
-			"bcrypt-sampp",
+			"bcrypt-samp",
 			"streamer",
-			"samp-precise-timers"	
-		],
-		"gamemodes": [
-			"main"
+			"samp-precise-timers"
 		],
 		"rcon_password": "@#$12@@",
-		"port": 7777,	
+		"port": 7777,
 		"hostname": "[0.3-DL] Freedom Roleplay Project - v0.1",
 		"maxplayers": 255,
 		"language": "Vietnamese",
 		"mapname": "Los Santos",
 		"weburl": "www.fr-rp.com",
 		"gamemodetext": "FR-Project v0.1",
+		"gamemodes": [
+			"main"
+		],
 		"announce": true,
 		"lanmode": false,
 		"query": true,
@@ -67,7 +71,7 @@
 		"conncookies": true,
 		"cookielogging": false,
 		"output": true,
-		"extra":{
+		"extra": {
 			"useartwork": "1"
 		}
 	},

@@ -201,7 +201,6 @@ stock bool:Door_FormatInformation(index)
         new text[128];
         if(door[is_Door_sold] == 1)
         {
-            printf("debug %s", Door_GetPrice(index));
             format(text, sizeof(text), "%s\nChu cua Door: %s\nTinh trang: %s - Gia thanh ban: %s$\nTinh trang cua: %s", door[doorName], door[doorOwnedName], Door_GetSold(index), Door_GetPrice(index), Door_GetLocked(index));
         }
         else
