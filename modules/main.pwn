@@ -66,3 +66,14 @@ public OnGameModeInit()
 	EnableVehicleFriendlyFire();
     return 1;
 }
+
+public OnPlayerCommandPerformed(playerid, cmd[], params[], result, flags)
+{
+    if (result == -1)
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Lenh nay khong ton tai, vui long thu lai hoac ban co the /trogiup de tim kiem lenh.");
+        return 0;
+    }
+
+    return 1;
+}
