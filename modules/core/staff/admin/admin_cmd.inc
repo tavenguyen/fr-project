@@ -51,33 +51,26 @@ ACMD[10]:makeadmin(playerid, params[])
     return 0;
 }
 
-CMD:admins(playerid, params[])
+ACMD[1]:staffon(playerid, params[])
 {
-    SendClientMessage(playerid, -1, "Ban quan tri hien tai dang co mat trong may chu");
-    SendClientMessage(playerid, -1, "-------------------------------------------------");
-
     new character[E_CHARACTER_MEMORY];
-    new bool:hasAdmin = false;
-
-    foreach(new i : Player)
+    if(list_get_arr_safe(characters, character_index[playerid], character))
     {
-        if(list_get_arr_safe(characters, character_index[i], character))
+        character[isAdminOnduty] = !character[isAdminOnduty];
+        list_set_arr(characters, character_index[playerid], character);
+
+        if(character[isAdminOnduty])
         {
-            if(character[characterAdminLevel] != 0)
-            {
-                SendClientMessageStr(playerid, -1, str_format("ID: %d | Admin Level: %d | Admin Name: %s | Onduty: Yes.", i, character[characterAdminLevel], character[characterAccount]));
-                if(hasAdmin == false)
-                {
-                    hasAdmin = true;
-                }
-            }
+            SendClientMessage(playerid, COLOR_GREY, "Ban vua bat che do lam viec ban quan tri.");
+            
+            new string[40 + MAX_PLAYER_NAME];
+            format(string, sizeof(string), "{abd6c6}Ban quan tri %s vua bat che do lam viec.", Account_ReturnName(playerid, 0));
+            SendClientMessageToAll(-1, string);
+            return 1;
         }
-    }
 
-    if(hasAdmin == false)
-    {
-        SendClientMessage(playerid, -1, "Khong co ban quan tri nao trong may chu.");
-    }
+        SendClientMessage(playerid, COLOR_GREY, "Ban vua tat di che do lam viec ban quan tri.");
+    }    
 
     return 1;
 }
