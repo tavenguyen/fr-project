@@ -90,6 +90,9 @@ hook OnPlayerClickTextDraw(playerid, Text:clickedid)
                         {
                             is_pCheckPassword[playerid] = true;
                             account_index[playerid] = iter_get_key(account_index_iter);
+                            LoadingCircle_Start(playerid, 150);
+                            MessageTDLine_ShowForPlayer(playerid, "Mat khau cang dai thi kiem tra cang lau, hay doi trong giay lat...", 3500);
+
                             bcrypt_check(Inputtext_AccountLogin[playerid], account[accountPassword], "OnPasswordChecked", "d", playerid);
                             return 1;
                         }   

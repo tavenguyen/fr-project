@@ -253,9 +253,10 @@ forward OnPasswordChecked(playerid);
 public OnPasswordChecked(playerid)
 {
     new bool:match = bcrypt_is_equal();
-    MessageTDLine_ShowForPlayer(playerid, "Mat khau cang dai thi kiem tra cang lau, hay doi trong giay lat...", 2000);
+    wait_ms(2000);
     if(match == true)
     {
+        LoadingCircle_Stop(playerid);
         MessageTDLine_ShowForPlayer(playerid, "Ban da dang nhap tai khoan thanh cong.", 2000);
 
         new account_inside[E_PLAYER_ACCOUNT_MEMORY];
@@ -271,6 +272,7 @@ public OnPasswordChecked(playerid)
     }
     else
     {
+        LoadingCircle_Stop(playerid);
         is_pCheckPassword[playerid] = false;
         Msg(playerid, MSG_PREFIX_ERROR, "Mat khau khong hop le, vui long thu lai!");
         return 1;

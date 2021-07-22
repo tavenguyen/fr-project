@@ -13,11 +13,14 @@
 #define PP_SYNTAX_FOR_MAP
 
 native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessage;
+
 //---------------------------------- Libaries ----------------------------------//
 #include <a_samp>
 #include <a_mysql>
 
 #include <PawnPlus>
+#include <async-dialogs>
+
 #include <uuid>
 #include <streamer>
 #include <sscanf2>
@@ -42,6 +45,7 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <load_database>
 
 //---------------------------------- Modules ----------------------------------//
+#include <circleloading>
 #include <fadescreen>
 #include <account>
 #include <player_cmd>
@@ -51,6 +55,7 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 
 #include <config_door>
 #include <main_door>
+
 
 main(){}
 
@@ -64,6 +69,7 @@ public OnGameModeInit()
 	AllowInteriorWeapons(1);
 	EnableStuntBonusForAll(0);
 	EnableVehicleFriendlyFire();
+    LoadingCircle_CreateTD();
     return 1;
 }
 

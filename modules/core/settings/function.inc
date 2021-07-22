@@ -90,7 +90,7 @@ stock MessageTDLine_ShowForPlayer(playerid, const str[], time)
 {
     if(MessageTDLine[playerid][0] == PlayerText:INVALID_PLAYER_TEXT_DRAW)
     {
-        MessageTDLine[playerid][0] = CreatePlayerTextDraw(playerid, 319.000000, 390.083160, "a");
+        MessageTDLine[playerid][0] = CreatePlayerTextDraw(playerid, 318.000000, 427.416534, "MESSAGE BOX BY HALOSETOE");
         PlayerTextDrawLetterSize(playerid, MessageTDLine[playerid][0], 0.206999, 1.133333);
         PlayerTextDrawAlignment(playerid, MessageTDLine[playerid][0], 2);
         PlayerTextDrawColor(playerid, MessageTDLine[playerid][0], -1);

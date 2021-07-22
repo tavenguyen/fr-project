@@ -97,7 +97,7 @@ public OnDoorLoad()
         cache_get_value_name(index, "doorUUID", door[doorUUID], UUID_LEN);
         cache_get_value_name(index, "doorName", door[doorName], MAX_DOOR_NAME);
         cache_get_value_name(index, "doorOwnedName", door[doorOwnedName], MAX_PLAYER_NAME + 1);
-        cache_get_value_int(index, "doorIsSold", door[is_Door_sold]);
+        cache_get_value_int(index, "doorIsSold", door[is_Door_sell]);
         cache_get_value_int(index, "doorPrice", door[doorPrice]);
         cache_get_value_int(index, "doorLocked", door[is_Door_locked]);
         cache_get_value_int(index, "doorExtIconType", door[doorExt_IconType]);
@@ -111,8 +111,10 @@ public OnDoorLoad()
         cache_get_value_float(index, "doorInt_posZ", door[doorInt_posZ]);
         cache_get_value_int(index, "doorInt_Int", door[doorInt_Int]);
         cache_get_value_int(index, "doorInt_VW", door[doorInt_VW]);
+        cache_get_value_int(index, "doorType", door[doorType]);
+        
+        door[playerEditDoorID] = INVALID_PLAYER_ID;
 
-        door[doorID_Pickup] = CreateDynamicPickup(door[doorExt_IconType], 0, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_VW], door[doorExt_Int]);
         new door_index = list_add_arr(entrances_list, door);
         Door_FormatInformation(door_index);
     }

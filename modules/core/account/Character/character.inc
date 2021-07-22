@@ -138,6 +138,7 @@ stock Character_Join(playerid, const name[])
             {
                 isPlayerConnected[playerid] = true;
                 character_index[playerid] = iter_get_key(characters_index_iter);
+                printf("Debug Index: %d", character_index[playerid]);
 
                 ClearChat(playerid);
                 CancelSelectTextDraw(playerid);
@@ -231,8 +232,6 @@ SaveCharacter(playerid)
             skinid, x, y, z, angle, int, vw, health, armour, character[characterUUID]);
 
         mysql_tquery(MySQL_GetHandle(), query);
-        printf("[debug] %s", query);
-
         return 1;
     }
 

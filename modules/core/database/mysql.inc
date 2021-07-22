@@ -7,7 +7,7 @@
 
 #define             FCR_LOCALHOST                "localhost"
 #define             FCR_SQL_USER                 "root"
-#define             FCR_PASSWORD                 "123456" // Add password if exist
+#define             FCR_PASSWORD                 "" // Add password if exist
 #define             FCR_DATABASE                 "fcrp-project"      
 
 static MySQL:mysql_handle;
@@ -46,8 +46,13 @@ hook OnGameModeInit()
 
 hook OnGameModeExit()
 {
+    foreach(new i : Player)
+	{
+		SaveCharacter(i);
+		Kick(i);
+	}
+
     mysql_close(mysql_handle);
     print("INFO: MySQL connection terminated");
-
     return 1;
 }

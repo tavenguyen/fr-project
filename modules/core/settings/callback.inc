@@ -2,6 +2,7 @@
 
 hook OnPlayerDisconnect(playerid, reason)
 {
+    LoadingCircle_Stop(playerid);
     PlayerTextDrawHide(playerid, MessageTDLine[playerid][0]);
     if(MessageTDLine_Timer[playerid] != -1)
     {
