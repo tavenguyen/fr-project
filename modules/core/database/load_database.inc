@@ -4,7 +4,6 @@
 #include <YSI_Coding\y_hooks>
 hook OnGameModeInit()
 {
-    entrances_list = list_new();
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `accounts`", "OnAccountLoad");
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `characters`", "OnCharacterLoad");
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `doors`", "OnDoorLoad");
@@ -78,6 +77,7 @@ public OnCharacterLoad()
         cache_get_value_name(index, "charAccent", character[characterAccent], MAX_CHARACTER_ACCENT);
         cache_get_value_name(index, "charDescribe", character[characterDescribe], MAX_CHARACTER_DESCRIBE);
         cache_get_value_int(index, "charAdmin", character[characterAdminLevel]);
+        cache_get_value_int(index, "charInDoor", character[characterInDoor]);
 
         list_add_arr(characters, character);
     }
@@ -111,12 +111,17 @@ public OnDoorLoad()
         cache_get_value_float(index, "doorInt_posZ", door[doorInt_posZ]);
         cache_get_value_int(index, "doorInt_Int", door[doorInt_Int]);
         cache_get_value_int(index, "doorInt_VW", door[doorInt_VW]);
-        cache_get_value_int(index, "doorType", door[doorType]);
+        cache_get_value_int(index, "doorTypeRoom", door[doorTypeRoom]);
         
         door[playerEditDoorID] = INVALID_PLAYER_ID;
+        
+        new doorid = list_add_arr(entrances_list, door);
 
-        new door_index = list_add_arr(entrances_list, door);
-        Door_FormatInformation(door_index);
+        new cp_Index = CreateDynamicCP(door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], 1.0, door[doorInt_VW], door[doorInt_Int], _, 2.0);
+        Streamer_SetIntData(STREAMER_TYPE_CP, cp_Index, E_STREAMER_EXTRA_ID, E_EXTRA_ID_DOOR);
+
+        Door_FormatInformation(doorid);
+        map_add(checkpointMap_Door, cp_Index, doorid);
     }
 
     printf("Loaded %d doors from database.", rows);

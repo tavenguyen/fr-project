@@ -251,7 +251,7 @@ stock SendSplitString(playerid, type, string[])
                 format(cmd, sizeof(cmd), "%s noi%s: %s...", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), old_line);
                 ProxDetector(playerid, 10.0, -1, cmd);
                 
-                format(cmd, sizeof(cmd), "... %s", new_line);
+                format(cmd, sizeof(cmd), "%s noi:... %s", Account_ReturnName(playerid, 0), new_line);
                 ProxDetector(playerid, 10.0, -1, cmd);
 
                 return 1;
@@ -260,7 +260,7 @@ stock SendSplitString(playerid, type, string[])
             new cmd[144];
             format(cmd, sizeof(cmd), "%s noi%s: %s", Account_ReturnName(playerid, 0), Character_GetAccent(playerid), string);
             ProxDetector(playerid, 10.0, -1, cmd);
-            SetPlayerChatBubble(playerid, cmd, -1, 10.0, 3000);
+            SetPlayerChatBubble(playerid, string, -1, 10.0, 3000);
             return 1;
         }
         // me

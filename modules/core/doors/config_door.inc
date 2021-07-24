@@ -7,17 +7,19 @@
 
 #define                 MAX_DISTANCE_DOOR                    15.0
 
-#define                 MAX_PLAYERS_SMALL_DOOR               5
+#define                 MAX_PLAYERS_SMALL_DOOR               1
 #define                 MAX_PLAYERS_MEDIUM_DOOR              10
 #define                 MAX_PLAYERS_LARGE_DOOR               15
+
+#define                 INVALID_DOOR_ID                     -1
 
 static const DOOR_EXTERIOR_ICON_TYPE = 19197;
 
 enum
 {
-    doorType_Small,
-    doorType_Medium,
-    doorType_Large
+    doorTypeRoom_Small,
+    doorTypeRoom_Medium,
+    doorTypeRoom_Large
 }
 
 enum _:E_DOORS_MEMORY
@@ -25,7 +27,7 @@ enum _:E_DOORS_MEMORY
     doorUUID[UUID_LEN],
     doorName[MAX_DOOR_NAME],
     doorOwnedName[MAX_PLAYER_NAME + 1],
-    doorType,
+    doorTypeRoom,
     doorID_Pickup,
     is_Door_sell,
     is_Door_locked,
@@ -56,7 +58,12 @@ static iconType_Door[] = {1672, 1212, 2037, 1644, 1240, 2709, 1314, 1273, 1239, 
 
 static string_iconType[2000];
 
-new List:entrances_list;
+new
+    doorID_playerNear[MAX_PLAYERS] = -1;
+
+new 
+    List:entrances_list,
+    Map:checkpointMap_Door;
 
 stock Door_Create(Float:x, Float:y, Float:z, interiorid, worldid)
 {
@@ -78,8 +85,9 @@ stock Door_Create(Float:x, Float:y, Float:z, interiorid, worldid)
     door[doorInt_posZ] = 0.0;
     door[doorInt_Int] = interiorid;
     door[doorInt_VW] = worldid;
-    door[doorType] = doorType_Small;
+    door[doorTypeRoom] = doorTypeRoom_Small;
     door[playerEditDoorID] = INVALID_PLAYER_ID;
+    door[door_count_players] = 0;
 
     new query[113 + UUID_LEN + 400];
     mysql_format(MySQL_GetHandle(), query, sizeof(query), 
@@ -87,12 +95,94 @@ stock Door_Create(Float:x, Float:y, Float:z, interiorid, worldid)
     door[doorUUID], door[doorName], door[doorOwnedName], door[is_Door_sell], door[doorPrice], door[is_Door_locked], door[doorExt_IconType],
     door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_Int], door[doorExt_VW],
     door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], door[doorInt_Int], door[doorInt_VW],
-    door[doorType]);
+    door[doorTypeRoom]);
     mysql_tquery(MySQL_GetHandle(), query);
 
     door[doorID_Pickup] = CreateDynamicPickup(door[doorExt_IconType], 1, x, y, z, worldid, interiorid, _);
-    printf("%d", door[doorID_Pickup]);
     return list_add_arr(entrances_list, door);
+}
+
+stock Door_Delete(doorid)
+{
+    new 
+        character[E_CHARACTER_MEMORY],
+        door[E_DOORS_MEMORY];
+
+    if(list_get_arr_safe(entrances_list, doorid, door))
+    {
+        foreach(new playerid : Player)
+        {
+            if(!PlayerIsConnected(playerid))
+            {
+                continue;
+            }
+
+            if(list_get_arr_safe(characters, character_index[playerid], character))
+            {
+                if(character[characterInDoor] == doorid)
+                {
+                    Streamer_UpdateEx(playerid, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_VW], door[doorExt_Int], 1000, 1);
+                    Msg(playerid, MSG_PREFIX_SUCCESS, "Door nay bi ban quan tri xoa, he thong tu dong cho ban ra Exterior Pos cua Door.");
+                
+                    character[characterInDoor] = INVALID_DOOR_ID;
+                    list_set_arr(characters, character_index[playerid], character);
+
+                    new query[500];
+                    mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'", character[characterInDoor], door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_Int], door[doorExt_VW], character[characterUUID]);
+                    mysql_tquery(MySQL_GetHandle(), query);
+                    printf(query);
+                }
+            }
+        }
+    }
+
+    for(new Iter:player = list_iter(characters); iter_inside(player); iter_move_next(player))
+    {
+        if(iter_get_arr_safe(player, character))
+        {
+            if(character[characterInDoor] == doorid)
+            {
+                character[characterInDoor] = INVALID_DOOR_ID;
+                character[characterPosX] = door[doorExt_posX];
+                character[characterPosY] = door[doorExt_posY];
+                character[characterPosZ] = door[doorExt_posZ];
+
+                iter_set_arr(player, character);
+
+                new query[500];
+                mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d, `charPosX` = %.4f, `charPosY` = %.4f, `charPosZ` = %.4f, `charInteriorID` = %d, `charWorldID` = %d WHERE `charUUID` = '%e'", character[characterInDoor], door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_Int], door[doorExt_VW], character[characterUUID]);
+                mysql_query(MySQL_GetHandle(), query);
+            }
+        }
+    }
+
+    for(new Iter:index = map_iter(checkpointMap_Door); iter_inside(index); iter_move_next(index))
+    {
+        new doorInIter;
+        if(iter_get_value_safe(index, doorInIter))
+        {
+            if(doorInIter == doorid)
+            {
+                DestroyDynamicCP(iter_get_key(index));
+                iter_erase_deep(index);
+                break;
+            }
+        }
+    }
+
+    if(list_get_arr_safe(entrances_list, doorid, door))
+    {
+        DestroyDynamicPickup(door[doorID_Pickup]);
+        DestroyDynamic3DTextLabel(door[doorExt_Text3D]);
+    }
+
+
+    new query[44 + UUID_LEN];
+    mysql_format(MySQL_GetHandle(), query, sizeof(query), "DELETE FROM `doors` WHERE `doorUUID` = '%e'", door[doorUUID]);
+    mysql_tquery(MySQL_GetHandle(), query);
+    
+    list_remove_deep(entrances_list, doorid);
+    return 0;
 }
 
 stock Door_GetSold(index)
@@ -281,15 +371,36 @@ stock Door_GetType(doorid)
     new door_inside[E_DOORS_MEMORY];
     if(list_get_arr_safe(entrances_list, doorid, door_inside))
     {
-        switch(door_inside[doorType])
+        switch(door_inside[doorTypeRoom])
         {
-            case doorType_Small: format(string, sizeof(string), "Small Door");
-            case doorType_Medium: format(string, sizeof(string), "Medium Door");
-            case doorType_Large: format(string, sizeof(string), "Large Door");
+            case doorTypeRoom_Small: format(string, sizeof(string), "Small Door");
+            case doorTypeRoom_Medium: format(string, sizeof(string), "Medium Door");
+            case doorTypeRoom_Large: format(string, sizeof(string), "Large Door");
         }
     }
 
     return string;
+}
+
+stock Door_GetMaxPlayers(doorid)
+{
+    if(doorid < 0 || doorid >= list_size(entrances_list))
+    {
+        return 0;
+    }
+
+    new door_inside[E_DOORS_MEMORY];
+    if(list_get_arr_safe(entrances_list, doorid, door_inside))
+    {
+        switch(door_inside[doorTypeRoom])
+        {
+            case doorTypeRoom_Small: return MAX_PLAYERS_SMALL_DOOR;
+            case doorTypeRoom_Medium: return MAX_PLAYERS_MEDIUM_DOOR;
+            case doorTypeRoom_Large: return MAX_PLAYERS_LARGE_DOOR;
+        }
+    }
+
+    return 0;
 }
 
 stock Door_EditByPlayer(playerid, doorid)
@@ -425,7 +536,7 @@ stock Door_EditByPlayer(playerid, doorid)
         Door_FormatInformation(doorid);
 
         new query_lock[60 + UUID_LEN + 1];
-        mysql_format(MySQL_GetHandle(), query_lock, sizeof(query_lock), "UPDATE `doors` SET `doorLocked` = %d WHERE `doorUUID` = '%e'", door[is_Door_sell], door[doorUUID]);
+        mysql_format(MySQL_GetHandle(), query_lock, sizeof(query_lock), "UPDATE `doors` SET `doorLocked` = %d WHERE `doorUUID` = '%e'", door[is_Door_locked], door[doorUUID]);
         mysql_tquery(MySQL_GetHandle(), query_lock);
 
         Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da chuyen doi thanh cong trang thai khoa/mo khoa cua Door.");
@@ -469,6 +580,19 @@ stock Door_EditByPlayer(playerid, doorid)
         else goto doormaindialog;
 
         doorEdit_ExteriorPos:
+        new door_inside_ext[E_DOORS_MEMORY];
+        for(new Iter:index = list_iter(entrances_list); iter_inside(index); iter_move_next(index))
+        {
+            if(iter_get_arr_safe(index, door_inside_ext) && iter_get_key(index) != doorid)
+            {
+                if(IsPlayerInRangeOfPoint(playerid, 1.0, door_inside_ext[doorExt_posX], door_inside_ext[doorExt_posY], door_inside_ext[doorExt_posZ]))
+                {
+                    Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the dat vi tri Exterior cua Door gan voi Door khac.");
+                    goto doormaindialog;
+                }
+            }
+        }
+
         GetPlayerPos(playerid, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ]);
         door[doorExt_Int] =  GetPlayerInterior(playerid);
         door[doorExt_VW] = GetPlayerVirtualWorld(playerid);
@@ -484,6 +608,19 @@ stock Door_EditByPlayer(playerid, doorid)
         goto doormaindialog;
 
         doorEdit_InteriorPos:
+        new door_inside_int[E_DOORS_MEMORY];
+        for(new Iter:index = list_iter(entrances_list); iter_inside(index); iter_move_next(index))
+        {
+            if(iter_get_arr_safe(index, door_inside_int) && iter_get_key(index) != doorid)
+            {
+                if(IsPlayerInRangeOfPoint(playerid, 1.0, door_inside_int[doorInt_posX], door_inside_int[doorInt_posY], door_inside_int[doorInt_posZ]))
+                {
+                    Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the dat vi tri Interior cua Door gan voi Door khac.");
+                    goto doormaindialog;
+                }
+            }
+        }
+
         GetPlayerPos(playerid, door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ]);
         door[doorInt_Int] = GetPlayerInterior(playerid);
         door[doorInt_VW] = GetPlayerVirtualWorld(playerid);
@@ -494,6 +631,29 @@ stock Door_EditByPlayer(playerid, doorid)
         new query_Int[500];
         mysql_format(MySQL_GetHandle(), query_Int, sizeof(query_Int), "UPDATE `doors` SET `doorInt_posX` = %.4f, `doorInt_posY` = %.4f, `doorInt_posZ` = %.4f, `doorInt_Int` = %d, `doorInt_VW` = %d WHERE `doorUUID` = '%e'", door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], door[doorInt_Int], door[doorInt_VW], door[doorUUID]);
         mysql_tquery(MySQL_GetHandle(), query_Int);
+
+        for(new Iter:cpid = map_iter(checkpointMap_Door); iter_inside(cpid); iter_move_next(cpid))
+        {
+            new checkpointID, doorID_inIter; 
+            if(iter_get_value_safe(cpid, doorID_inIter))
+            {
+                if(doorID_inIter == doorid)
+                {
+                    if(iter_get_key_safe(cpid, checkpointID))
+                    {
+                        DestroyDynamicCP(checkpointID);
+                        iter_erase_deep(cpid);
+                        break;
+                    }
+                }
+            }
+        }
+
+        new cp_Index = CreateDynamicCP(door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], 1.0, door[doorInt_VW], door[doorInt_Int], _, 2.0);
+        Streamer_SetIntData(STREAMER_TYPE_CP, cp_Index, E_STREAMER_EXTRA_ID, E_EXTRA_ID_DOOR);
+
+        new index_db = map_add(checkpointMap_Door, cp_Index, doorid);
+        printf("Index debug in config door: %d", index_db);
 
         Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da dieu chinh thanh cong vi tri cua Interior.");
         goto doormaindialog;
@@ -507,41 +667,41 @@ stock Door_EditByPlayer(playerid, doorid)
             {
                 case 0: 
                 {
-                    if(door[doorType] == doorType_Small)
+                    if(door[doorTypeRoom] == doorTypeRoom_Small)
                     {
                         Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the chon loai Door nay nua.");
                         goto doorEdit_Type;
                     }
 
-                    door[doorType] = doorType_Small;
+                    door[doorTypeRoom] = doorTypeRoom_Small;
                     list_set_arr(entrances_list, doorid, door);
                 }
                 case 1:
                 {
-                    if(door[doorType] == doorType_Medium)
+                    if(door[doorTypeRoom] == doorTypeRoom_Medium)
                     {
                         Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the chon loai Door nay nua.");
                         goto doorEdit_Type;
                     }
 
-                    door[doorType] = doorType_Medium;
+                    door[doorTypeRoom] = doorTypeRoom_Medium;
                     list_set_arr(entrances_list, doorid, door);
                 }
                 case 2:
                 {
-                    if(door[doorType] == doorType_Large)
+                    if(door[doorTypeRoom] == doorTypeRoom_Large)
                     {
                         Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the chon loai Door nay nua.");
                         goto doorEdit_Type;
                     }
 
-                    door[doorType] = doorType_Large;
+                    door[doorTypeRoom] = doorTypeRoom_Large;
                     list_set_arr(entrances_list, doorid, door);
                 }
             }
 
             new query[58 + 2 + UUID_LEN];
-            mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `doors` SET `doorType` = %d WHERE `doorUUID` = '%e'", door[doorType], door[doorUUID]);
+            mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `doors` SET `doorTypeRoom` = %d WHERE `doorUUID` = '%e'", door[doorTypeRoom], door[doorUUID]);
             mysql_tquery(MySQL_GetHandle(), query);
 
             Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da chon thanh cong loai moi danh cho Door.");
@@ -556,6 +716,167 @@ stock Door_EditByPlayer(playerid, doorid)
 
     return 1;
 }
+
+stock GetDoorIDNearPlayer(playerid)
+{
+    new 
+        door[E_DOORS_MEMORY],
+        vw = GetPlayerVirtualWorld(playerid),
+        interiorid = GetPlayerInterior(playerid);
+
+    for(new Iter:doorid = list_iter(entrances_list); iter_inside(doorid); iter_move_next(doorid))
+    {
+        if(iter_get_arr_safe(doorid, door))
+        {
+            if(door[doorExt_Int] == interiorid && door[doorExt_VW] == vw)
+            {
+                if(IsPlayerInRangeOfPoint(playerid, 1.0, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ]))
+                {
+                    return iter_get_key(doorid);
+                }
+            }
+        }
+    }
+
+    return (-1);
+}
+
+stock bool:IsDoorLocked(doorid)
+{
+    if(doorid < 0 || doorid >= list_size(entrances_list))
+    {
+        return false;
+    }
+
+    new door_inside[E_DOORS_MEMORY];
+    if(list_get_arr_safe(entrances_list, doorid, door_inside))
+    {
+        if(door_inside[is_Door_locked] == 1)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+stock bool:IsPlayerInDoor(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        if(character[characterInDoor] != INVALID_DOOR_ID)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+stock PlayerInDoorLeave(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        if(character[characterInDoor] == INVALID_DOOR_ID)
+        {
+            return 0;
+        }
+
+        if(character[characterInDoor] < 0 || character[characterInDoor] >= list_size(entrances_list))
+        {
+            return 0;
+        }
+
+        new door[E_DOORS_MEMORY];
+        if(list_get_arr_safe(entrances_list, character[characterInDoor], door))
+        {
+            door[door_count_players]--;
+            list_set_arr(entrances_list, character[characterInDoor], door);
+
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+Door_StreamPlayerToInterior(playerid, index)
+{
+    new door[E_DOORS_MEMORY];
+    list_get_arr_safe(entrances_list, index, door);
+    
+    if(door[doorInt_posX] == 0.0 && door[doorInt_posY] == 0.0 && door[doorInt_posZ] == 0.0)
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Interior nay chua duoc thiet lap, vui long thu lai.");
+        return 1;
+    }
+
+    if(door[door_count_players] == Door_GetMaxPlayers(index))
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the vao vi da du so luong nguoi choi trong Door.");
+        return 1;
+    }
+
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        if(character[characterInDoor] != INVALID_DOOR_ID)
+        {
+            list_get_arr_safe(entrances_list, character[characterInDoor], door);
+            door[door_count_players]--;
+
+            list_set_arr(entrances_list, character[characterInDoor], door);
+            SendClientMessageStr(playerid, -1, str_format("Door ID: %d | Door Count Players: %d", character[characterInDoor], door[door_count_players]));
+        }
+
+        character[characterInDoor] = index;
+        list_set_arr(characters, character_index[playerid], character);
+
+        new query[65 + UUID_LEN + 10];
+        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d WHERE `charUUID` = '%e'", index, character[characterUUID]);
+        mysql_query(MySQL_GetHandle(), query);
+
+        list_get_arr_safe(entrances_list, index, door);
+
+        FadePlayerScreen(playerid, 0, _, 1000);
+        Streamer_UpdateEx(playerid, door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], door[doorInt_VW], door[doorInt_Int], _, 1000, 1);
+        
+        door[door_count_players]++;
+        list_set_arr(entrances_list, index, door);
+
+        SendClientMessageStr(playerid, -1, str_format("Door ID: %d | Door Count Players: %d", character[characterInDoor], door[door_count_players]));
+    }
+
+    return 1;
+}
+
+Door_StreamPlayerToExterior(playerid, index)
+{
+    new door[E_DOORS_MEMORY];
+    if(list_get_arr_safe(entrances_list, index, door))
+    {
+        door[door_count_players]--;
+        list_set_arr(entrances_list, index, door);
+        SendClientMessageStr(playerid, -1, str_format("[debug] Door ID: %d | Door Count Players: %d", index, door[door_count_players]));
+
+        FadePlayerScreen(playerid, 0, _, 1000);
+        Streamer_UpdateEx(playerid, door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], door[doorExt_VW], door[doorExt_Int], _, 1000, 1);
+    
+        new character[E_CHARACTER_MEMORY];
+        if(list_get_arr_safe(characters, character_index[playerid], character))
+        {
+            character[characterInDoor] = INVALID_DOOR_ID;
+            list_set_arr(characters, character_index[playerid], character);
+
+            new query[65 + UUID_LEN + 10];
+            mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d WHERE `charUUID` = '%e'", character[characterInDoor], character[characterUUID]);
+            mysql_query(MySQL_GetHandle(), query);
+        }
+    }
+}
+
 
 #include <YSI_Coding\y_hooks>
 hook OnGameModeInit()
@@ -579,6 +900,9 @@ hook OnGameModeInit()
         format(string_iconType, sizeof(string_iconType), "%s]", string_iconType);
         dem += 11;
     }
+
+    entrances_list = list_new();
+    checkpointMap_Door = map_new();
 }
 
 hook OnPlayerDisconnect(playerid, reason)
@@ -597,5 +921,40 @@ hook OnPlayerDisconnect(playerid, reason)
             }
         }
     }
+    return 1;
+}
+
+hook OnPlayerEnterDynamicCP(playerid, checkpointid)
+{
+    if(Streamer_GetIntData(STREAMER_TYPE_CP, checkpointid, E_STREAMER_EXTRA_ID) == E_EXTRA_ID_DOOR)
+    {
+        for(new Iter:index = map_iter(checkpointMap_Door); iter_inside(index); iter_move_next(index))
+        {
+            new key;
+            if(iter_get_key_safe(index, key))
+            {   
+                if(key == checkpointid)
+                {
+                    doorID_playerNear[playerid] = iter_get_value(index);
+
+                    break;
+                }
+            }
+        }   
+    }
+
+    return 1;
+}
+
+hook OnPlayerLeaveDynamicCP(playerid, checkpointid)
+{
+    if(Streamer_GetIntData(STREAMER_TYPE_CP, checkpointid, E_STREAMER_EXTRA_ID) == E_EXTRA_ID_DOOR)
+    {
+        if(doorID_playerNear[playerid] != -1)
+        {
+            doorID_playerNear[playerid] = -1;
+        }
+    }
+
     return 1;
 }

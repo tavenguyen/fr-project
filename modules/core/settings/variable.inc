@@ -21,6 +21,11 @@ enum _:AutoToggle
     CAR_WHISPER_TOGGLE
 }
 
+enum
+{
+    E_EXTRA_ID_DOOR    
+}
+
 new bool:array_AutoToggle[MAX_PLAYERS][AutoToggle];
 new iWhisperTargetID[MAX_PLAYERS];
 // new bool:bLowToggle = false;

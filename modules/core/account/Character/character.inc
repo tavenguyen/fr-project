@@ -5,6 +5,8 @@
 //    Game Content: Halosetoe               //
 /*--------- Freedom Roleplay v0.1 ---------*/
 
+#include <config_door>
+
 stock CharacterCreate_Reset(playerid)
 {
     CharacterCreate_Name[playerid][0] = EOS;
@@ -138,7 +140,6 @@ stock Character_Join(playerid, const name[])
             {
                 isPlayerConnected[playerid] = true;
                 character_index[playerid] = iter_get_key(characters_index_iter);
-                printf("Debug Index: %d", character_index[playerid]);
 
                 ClearChat(playerid);
                 CancelSelectTextDraw(playerid);
@@ -182,26 +183,53 @@ public OnCharacterReconnect(playerid, index, const name[])
             cache_get_value_float(i, "charHealth", character_inside[characterHealth]);
             cache_get_value_float(i, "charArmour", character_inside[characterArmour]);
             cache_get_value_int(index, "charAdmin", character_inside[characterAdminLevel]);
-            
-            character_inside[isAdminOnduty] = false;
-            list_set_arr(characters, index, character_inside);
+            cache_get_value_int(index, "charInDoor", character_inside[characterInDoor]);
 
             SetSpawnInfo(playerid, 0, character_inside[characterSkinID], character_inside[characterPosX], character_inside[characterPosY], character_inside[characterPosZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
-            SpawnPlayer(playerid);
-            TogglePlayerSpectating(playerid, false);
 
+            new door[E_DOORS_MEMORY];
+            if(character_inside[characterInDoor] != INVALID_DOOR_ID)
+            {
+                if(character_inside[characterInDoor] < 0 || character_inside[characterInDoor] >= list_size(entrances_list))
+                {
+                    KickEx(playerid, MSG_PREFIX_ERROR, "[DEBUG] Hay lien he loi nay den may chu!", 400);
+                    return 1;
+                }
+
+                list_get_arr_safe(entrances_list, character_inside[characterInDoor], door);
+                if(door[door_count_players] == Door_GetMaxPlayers(character_inside[characterInDoor]))
+                {
+                    character_inside[characterInDoor] = INVALID_DOOR_ID;
+
+                    new query[65 + UUID_LEN + 10];
+                    mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d WHERE `charUUID` = '%e'", character_inside[characterInDoor], character_inside[characterUUID]);
+                    mysql_query(MySQL_GetHandle(), query);
+
+                    SetSpawnInfo(playerid, 0, character_inside[characterSkinID], door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
+                    character_inside[characterVW] = door[doorExt_VW];
+                    character_inside[characterInt] = door[doorExt_Int];
+                }
+
+                if(character_inside[characterInDoor] != INVALID_DOOR_ID)
+                {
+                    door[door_count_players]++;
+                    list_set_arr(entrances_list, character_inside[characterInDoor], door);
+                }
+            }
+            
+            character_inside[isAdminOnduty] = false;
+
+            SpawnPlayer(playerid);
             SetPlayerName(playerid, name);
-           
             SetPlayerInterior(playerid, character_inside[characterInt]);
             SetPlayerVirtualWorld(playerid, character_inside[characterVW]);
-            
             SetPlayerHealth(playerid, character_inside[characterHealth]);
             SetPlayerArmour(playerid, character_inside[characterArmour]);
-            
+            TogglePlayerSpectating(playerid, false);
             FadePlayerScreen(playerid, 0, _, 2000);
 
             wait_ms(2000);
-            
+            ClearChat(playerid);
             Msg(playerid, MSG_PREFIX_SUCCESS, "Chao mung ban den voi may chu.");
             return 1;
         }
@@ -399,6 +427,7 @@ hook OnPlayerDisconnect(playerid, reason)
 
         if(SaveCharacter(playerid) == 1) 
         {
+            PlayerInDoorLeave(playerid);
             printf("Luu thanh cong nhan vat %s", Account_ReturnName(playerid));
             character_index[playerid] = -1;
         }

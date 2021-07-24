@@ -35,7 +35,7 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <config-colors>
 #include <config-dialogs-id>
 //---------------------------------- Settings ----------------------------------//
-#include <varaible>
+#include <variable>
 #include <define>
 #include <callback>
 #include <fc_string>
@@ -47,13 +47,15 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 //---------------------------------- Modules ----------------------------------//
 #include <circleloading>
 #include <fadescreen>
+
 #include <account>
-#include <player_cmd>
 
 #include <admin\admin_function>
 #include <admin\admin_cmd>
 
 #include <config_door>
+#include <player_cmd>
+
 #include <main_door>
 
 
@@ -70,6 +72,7 @@ public OnGameModeInit()
 	EnableStuntBonusForAll(0);
 	EnableVehicleFriendlyFire();
     LoadingCircle_CreateTD();
+
     return 1;
 }
 

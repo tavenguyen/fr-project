@@ -53,7 +53,8 @@ enum _:E_CHARACTER_MEMORY
     characterAccent[MAX_CHARACTER_ACCENT],
     characterDescribe[MAX_CHARACTER_DESCRIBE],
     characterAdminLevel,
-    bool:isAdminOnduty
+    bool:isAdminOnduty,
+    characterInDoor
 }
 
 new character_index[MAX_PLAYERS] = -1;

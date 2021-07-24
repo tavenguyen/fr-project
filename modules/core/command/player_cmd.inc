@@ -427,3 +427,47 @@ CMD:admins(playerid, params[])
 
     return 1;
 }
+
+CMD:enter(playerid)
+{
+    new index = GetDoorIDNearPlayer(playerid);
+    if(index == -1) 
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Ban khong o gan Door de thuc hien dieu nay.");
+        return 1;
+    }
+
+    if(IsDoorLocked(index))
+    {
+        MessageTDLine_ShowForPlayer(playerid, "Cua dang bi khoa, ban khong the vao trong.", 1000);
+        return 1;
+    }
+
+    Door_StreamPlayerToInterior(playerid, index);
+    return 1;
+}
+
+
+CMD:exit(playerid)
+{
+    if(doorID_playerNear[playerid] == -1)
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Ban khong o gan Door de thuc hien dieu nay.");
+        return 1;
+    }
+
+    if(!IsPlayerInDoor(playerid))
+    {
+        Msg(playerid, MSG_PREFIX_ERROR, "Ban khong o trong Door de thuc hien dieu nay.");
+        return 1;
+    }
+
+    if(IsDoorLocked(doorID_playerNear[playerid]))
+    {
+        MessageTDLine_ShowForPlayer(playerid, "Cua dang bi khoa, ban khong the ra ngoai.", 1000);
+        return 1;
+    }
+
+    Door_StreamPlayerToExterior(playerid, doorID_playerNear[playerid]);
+    return 1;
+}
