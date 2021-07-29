@@ -10,3 +10,9 @@
 
 #define                 MAX_DOOR_NAME                           30
 #define                 MAX_DOOR_PRICE                          99999999
+#define                 MAX_HOUSE_DESCRIBE                      100
+
+#define                 MAX_ADMIN_LEVEL                         9
+
+// Marcos
+

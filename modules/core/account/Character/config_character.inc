@@ -52,9 +52,15 @@ enum _:E_CHARACTER_MEMORY
     Float:characterArmour,
     characterAccent[MAX_CHARACTER_ACCENT],
     characterDescribe[MAX_CHARACTER_DESCRIBE],
+    
+    // Admin System
     characterAdminLevel,
+    characterPermission,
     bool:isAdminOnduty,
-    characterInDoor
+    
+    // House, Door, Business
+    characterInDoor,
+    bool:is_Char_Edit_House,
 }
 
 new character_index[MAX_PLAYERS] = -1;

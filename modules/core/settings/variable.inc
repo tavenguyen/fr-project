@@ -26,6 +26,19 @@ enum
     E_EXTRA_ID_DOOR    
 }
 
+enum _:e_Cmds_Flags
+{
+    CMD_FLAG_HELPER = 1, // Helper
+    CMD_FLAG_SUPPORTER, // Suporter
+    CMD_FLAG_ADM_TESTER, // Tester
+    CMD_FLAG_ADM_REPORTER, // Reporter
+    CMD_FLAG_ADM_JUNIOR, 
+    CMD_FLAG_ADM_SENIOR,
+    CMD_FLAG_ADM_HEAD,
+    CMD_FLAG_ADM_DIRECTOR,
+    CMD_FLAG_ADM_EXECUTIVE
+};
+
 new bool:array_AutoToggle[MAX_PLAYERS][AutoToggle];
 new iWhisperTargetID[MAX_PLAYERS];
 // new bool:bLowToggle = false;

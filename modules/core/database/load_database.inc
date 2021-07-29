@@ -1,5 +1,6 @@
 #include <account>
 #include <config_door>
+#include <config_house>
 
 #include <YSI_Coding\y_hooks>
 hook OnGameModeInit()
@@ -96,10 +97,7 @@ public OnDoorLoad()
     {
         cache_get_value_name(index, "doorUUID", door[doorUUID], UUID_LEN);
         cache_get_value_name(index, "doorName", door[doorName], MAX_DOOR_NAME);
-        cache_get_value_name(index, "doorOwnedName", door[doorOwnedName], MAX_PLAYER_NAME + 1);
-        cache_get_value_int(index, "doorIsSold", door[is_Door_sell]);
-        cache_get_value_int(index, "doorPrice", door[doorPrice]);
-        cache_get_value_int(index, "doorLocked", door[is_Door_locked]);
+        cache_get_value_int(index, "doorType", door[doorType]);
         cache_get_value_int(index, "doorExtIconType", door[doorExt_IconType]);
         cache_get_value_float(index, "doorExt_posX", door[doorExt_posX]);
         cache_get_value_float(index, "doorExt_posY", door[doorExt_posY]);
@@ -116,14 +114,88 @@ public OnDoorLoad()
         door[playerEditDoorID] = INVALID_PLAYER_ID;
         
         new doorid = list_add_arr(entrances_list, door);
+        if(door[doorType] == doorType_House) 
+        {
+            mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `houses_portal`", "OnHousePortalLoad", "sd", door[doorUUID], doorid);
+        }
 
         new cp_Index = CreateDynamicCP(door[doorInt_posX], door[doorInt_posY], door[doorInt_posZ], 1.0, door[doorInt_VW], door[doorInt_Int], _, 2.0);
         Streamer_SetIntData(STREAMER_TYPE_CP, cp_Index, E_STREAMER_EXTRA_ID, E_EXTRA_ID_DOOR);
 
-        Door_FormatInformation(doorid);
+        if(door[doorType] == doorType_none) 
+        {
+            Door_FormatInformation(doorid);
+        }
+
         map_add(checkpointMap_Door, cp_Index, doorid);
     }
 
     printf("Loaded %d doors from database.", rows);
+    mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `houses`", "OnHouseLoad");
+    
     return 1;
+}
+
+forward OnHousePortalLoad(const uuid[], doorid);
+public OnHousePortalLoad(const uuid[], doorid)
+{
+    new 
+        rows = cache_num_rows(),
+        house_uuid[UUID_LEN],
+        door_House[E_DOOR_HOUSE_MEMORY];
+
+    for(new index = 0; index < rows; index++)
+    {
+        cache_get_value_name(index, "houseportal_uuid", house_uuid, UUID_LEN);
+        if(!strcmp(house_uuid, uuid))
+        {
+            format(door_House[door_House_UUID], UUID_LEN, "%s", house_uuid);
+            cache_get_value_name(index, "house_uuid", door_House[House_UUID], UUID_LEN);
+            map_add_arr(m_doorHouseID, doorid, door_House);
+
+            printf("Debug House Portal: Door UUID: %s | House UUID: %s", door_House[door_House_UUID], door_House[House_UUID]);
+        }
+    }
+
+    return 1;
+}
+
+forward OnHouseLoad();
+public OnHouseLoad()
+{
+    new 
+        rows = cache_num_rows(),
+        house[E_PERSONAL_HOUSE_DATA], temp_v;
+
+    for(new index = 0; index < rows; index++)
+    {
+        temp_v = 0;
+        house[isHouseLocked] = false;
+        house[isHouseSell] = false;
+
+        cache_get_value_name(index, "house_UUID", house[house_UUID], UUID_LEN);
+        cache_get_value_name(index, "house_Describe", house[house_Describe], MAX_HOUSE_DESCRIBE);
+        cache_get_value_name(index, "house_Owner_Name", house[house_Owner_Name], MAX_PLAYER_NAME + 1);
+        cache_get_value_name(index, "house_Key", house[house_Key], 24);
+        cache_get_value_int(index, "house_Price", house[house_Price_sell]);
+        cache_get_value_int(index, "house_Lock", temp_v);
+        if(temp_v == 1)
+        {
+            house[isHouseLocked] = true;
+        }
+
+        cache_get_value_int(index, "house_Sell", temp_v);
+        if(temp_v == 1)
+        {
+            house[isHouseSell] = true;
+        }
+
+        list_add_arr(houses, house);
+        
+        new doorid = House_GetDoorID(house[house_UUID]);
+        printf("Door: %d | %s", doorid, house[house_UUID]);
+        Door_FormatInformation(doorid);
+    }
+
+    printf("Loaded %d houses from database.", rows);
 }

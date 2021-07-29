@@ -5,14 +5,16 @@
 //    Game Content: Halosetoe                       //
 /*-------------- Freedom Roleplay v0.1 --------------*/
 
-public OnPlayerCommandText(playerid, cmdtext[])
+enum _:E_HELP_COMMAND_DATA
 {
-    if(PlayerIsConnected(playerid) == false) 
-    {
-        return Msg(playerid, MSG_PREFIX_ERROR, "Ban chua dang nhap vao may chu.");
-    }
-    return 0;
-} 
+    introducedCommand[50],
+    listCommand[1048]
+}
+
+new help_Command[][E_HELP_COMMAND_DATA] = 
+{
+    {"Basic Command: ", "/me, /do, /low, /shout, /whisper, /pm, /b, /accent, /mota, /al, /as, /aw, /admins, /enter, /exit, /trogiup."}
+};
 
 CMD:me(playerid, params[])
 {
@@ -406,7 +408,7 @@ CMD:admins(playerid, params[])
     {
         if(list_get_arr_safe(characters, character_index[i], character))
         {
-            if(character[characterAdminLevel] != 0)
+            if(character[characterPermission] >= CMD_FLAG_ADM_REPORTER)
             {
                 if(hasAdmin == false)
                 {
@@ -439,14 +441,13 @@ CMD:enter(playerid)
 
     if(IsDoorLocked(index))
     {
-        MessageTDLine_ShowForPlayer(playerid, "Cua dang bi khoa, ban khong the vao trong.", 1000);
+        MessageTDLine_ShowForPlayer(playerid, "Cua dang bi khoa, khong the vao trong.", 1000);
         return 1;
     }
 
     Door_StreamPlayerToInterior(playerid, index);
     return 1;
 }
-
 
 CMD:exit(playerid)
 {
@@ -471,3 +472,14 @@ CMD:exit(playerid)
     Door_StreamPlayerToExterior(playerid, doorID_playerNear[playerid]);
     return 1;
 }
+
+CMD:help(playerid)
+{
+    SendClientMessage(playerid, COLOR_YELLOW, "Nhung lenh can thiet o trong may chu: ");
+    for(new i = 0; i < sizeof(help_Command); i++)
+    {
+        printf("%s | %s", help_Command[i][introducedCommand], help_Command[i][listCommand]);
+    }
+    return 1;
+}
+alias:help("trogiup", "commands")

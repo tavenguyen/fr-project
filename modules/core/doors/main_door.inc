@@ -1,17 +1,23 @@
-ACMD[6]:createdoor(playerid, params[])
-{
-    new Float:x, Float:y, Float:z;
+flags:createdoor(CMD_FLAG_ADM_HEAD)
+CMD:createdoor(playerid, params[])
+{   
+    new 
+        Float:x, Float:y, Float:z,
+        index = -1, string[128];
+    
     GetPlayerPos(playerid, x, y, z);
     
-    new index = Door_Create(x, y, z, GetPlayerInterior(playerid), GetPlayerVirtualWorld(playerid));
-    new string[128];
+    index = Door_Create(x, y, z, GetPlayerInterior(playerid), GetPlayerVirtualWorld(playerid));
+
     format(string, sizeof(string), "Ban vua tao ra mot Door [%d] o ngay vi tri cua ban, hay su dung /editdoor.", index);
     Msg(playerid, MSG_PREFIX_SUCCESS, string);
+    
     Door_FormatInformation(index);
     return 1;
 }
 
-ACMD[6]:editdoor(playerid, params[])
+flags:editdoor(CMD_FLAG_ADM_HEAD)
+CMD:editdoor(playerid, params[])
 {
     new doorid;
     if(sscanf(params, "d", doorid))
@@ -32,11 +38,17 @@ ACMD[6]:editdoor(playerid, params[])
         return Msg(playerid, MSG_PREFIX_ERROR, string);
     }
 
+    if(!IsTypeDoor(doorid) && !IsPlayerUseEditHouse(playerid))
+    {
+        return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the chinh sua Door nay.");
+    }
+
     Door_EditByPlayer(playerid, doorid);
     return 1;
 }
 
-ACMD[6]:deletedoor(playerid, params[])
+flags:deletedoor(CMD_FLAG_ADM_HEAD)
+CMD:deletedoor(playerid, params[])
 {
     new doorid;
     if(sscanf(params, "d", doorid))
@@ -57,7 +69,7 @@ ACMD[6]:deletedoor(playerid, params[])
         return Msg(playerid, MSG_PREFIX_ERROR, string);
     }
 
-    Door_Delete(doorid);
+    Door_DeleteByIndex(doorid);
     Msg(playerid, MSG_PREFIX_SUCCESS, "Ban da xoa thanh cong.");
     return 1;
 }

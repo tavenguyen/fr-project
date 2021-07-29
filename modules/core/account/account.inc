@@ -47,6 +47,7 @@ hook OnPlayerConnect(playerid)
         account_index[playerid] = -1;
     }
 
+    FCRP_RemoveBuildingForPlayer(playerid);
     SetPlayerColor(playerid, -1);
     TogglePlayerSpectating(playerid, true);
 

@@ -186,39 +186,15 @@ public OnCharacterReconnect(playerid, index, const name[])
             cache_get_value_int(index, "charInDoor", character_inside[characterInDoor]);
 
             SetSpawnInfo(playerid, 0, character_inside[characterSkinID], character_inside[characterPosX], character_inside[characterPosY], character_inside[characterPosZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
-
-            new door[E_DOORS_MEMORY];
-            if(character_inside[characterInDoor] != INVALID_DOOR_ID)
-            {
-                if(character_inside[characterInDoor] < 0 || character_inside[characterInDoor] >= list_size(entrances_list))
-                {
-                    KickEx(playerid, MSG_PREFIX_ERROR, "[DEBUG] Hay lien he loi nay den may chu!", 400);
-                    return 1;
-                }
-
-                list_get_arr_safe(entrances_list, character_inside[characterInDoor], door);
-                if(door[door_count_players] == Door_GetMaxPlayers(character_inside[characterInDoor]))
-                {
-                    character_inside[characterInDoor] = INVALID_DOOR_ID;
-
-                    new query[65 + UUID_LEN + 10];
-                    mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d WHERE `charUUID` = '%e'", character_inside[characterInDoor], character_inside[characterUUID]);
-                    mysql_query(MySQL_GetHandle(), query);
-
-                    SetSpawnInfo(playerid, 0, character_inside[characterSkinID], door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], character_inside[characterFacingAngle], 0, 0, 0, 0, 0, 0);
-                    character_inside[characterVW] = door[doorExt_VW];
-                    character_inside[characterInt] = door[doorExt_Int];
-                }
-
-                if(character_inside[characterInDoor] != INVALID_DOOR_ID)
-                {
-                    door[door_count_players]++;
-                    list_set_arr(entrances_list, character_inside[characterInDoor], door);
-                }
-            }
-            
+                
+            character_inside[characterPermission] = 0;
             character_inside[isAdminOnduty] = false;
+            character_inside[is_Char_Edit_House] = false;
 
+            Character_SetAdminLevel(playerid, character_inside[characterAdminLevel]);
+            Door_UpdatePlayersInDoor(playerid, character_inside[characterInDoor]);
+
+            TogglePlayerControllable(playerid, false);    
             SpawnPlayer(playerid);
             SetPlayerName(playerid, name);
             SetPlayerInterior(playerid, character_inside[characterInt]);
@@ -231,6 +207,7 @@ public OnCharacterReconnect(playerid, index, const name[])
             wait_ms(2000);
             ClearChat(playerid);
             Msg(playerid, MSG_PREFIX_SUCCESS, "Chao mung ban den voi may chu.");
+            TogglePlayerControllable(playerid, true);    
             return 1;
         }
     }
@@ -261,6 +238,120 @@ SaveCharacter(playerid)
 
         mysql_tquery(MySQL_GetHandle(), query);
         return 1;
+    }
+
+    return 0;
+}
+
+Door_UpdatePlayersInDoor(playerid, doorid)
+{
+    if(doorid < 0)
+    {
+        return 0;
+    }
+
+    new door[E_DOORS_MEMORY];
+    list_get_arr_safe(entrances_list, doorid, door);
+
+    new character_insidefunc[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character_insidefunc))
+    {
+        if(character_insidefunc[characterInDoor] != INVALID_DOOR_ID)
+        {
+            if(character_insidefunc[characterInDoor] < 0 || character_insidefunc[characterInDoor] >= list_size(entrances_list))
+            {
+                KickEx(playerid, MSG_PREFIX_ERROR, "[DEBUG] Hay lien he loi nay den may chu!", 400);
+                return 1;
+            }
+
+            list_get_arr_safe(entrances_list, character_insidefunc[characterInDoor], door);
+            if(door[door_count_players] == Door_GetMaxPlayers(character_insidefunc[characterInDoor]))
+            {
+                character_insidefunc[characterInDoor] = INVALID_DOOR_ID;
+
+                new query[65 + UUID_LEN + 10];
+                mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charInDoor` = %d WHERE `charUUID` = '%e'", character_insidefunc[characterInDoor], character_insidefunc[characterUUID]);
+                mysql_query(MySQL_GetHandle(), query);
+
+                SetSpawnInfo(playerid, 0, character_insidefunc[characterSkinID], door[doorExt_posX], door[doorExt_posY], door[doorExt_posZ], character_insidefunc[characterFacingAngle], 0, 0, 0, 0, 0, 0);
+                character_insidefunc[characterVW] = door[doorExt_VW];
+                character_insidefunc[characterInt] = door[doorExt_Int];
+            }
+
+            if(character_insidefunc[characterInDoor] != INVALID_DOOR_ID)
+            {
+                door[door_count_players]++;
+                list_set_arr(entrances_list, character_insidefunc[characterInDoor], door);
+            }
+        }
+    }
+
+    return 1;
+}
+
+stock Character_SetAdminLevel(playerid, level)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        list_set_cell(characters, character_index[playerid], characterAdminLevel, level);
+        switch(level)
+        {
+            case 0: 
+            {
+                character[characterPermission] = 0;
+            }
+            case 1:
+            {   
+                character[characterPermission] = CMD_FLAG_HELPER;
+            }
+            case 2:
+            {
+                character[characterPermission] = CMD_FLAG_SUPPORTER;
+            }
+            case 3:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_TESTER;
+            }
+            case 4:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_REPORTER;
+            }
+            case 5:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_JUNIOR;
+            }
+            case 6:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_SENIOR;
+            }
+            case 7:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_HEAD;
+            }
+            case 8:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_DIRECTOR;
+            }
+            case 9:
+            {
+                character[characterPermission] = CMD_FLAG_ADM_EXECUTIVE;
+            }
+        }
+
+        printf("[debug] Permission of %s is %d", Account_ReturnName(playerid, 0), character[characterPermission]);
+        list_set_cell(characters, character_index[playerid], characterPermission, character[characterPermission]);
+    }
+
+    return 1;
+}
+
+stock GetPermissionLevel(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        return character[characterPermission];
     }
 
     return 0;

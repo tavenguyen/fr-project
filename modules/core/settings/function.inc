@@ -412,3 +412,19 @@ stock Account_ReturnMAName(playerid)
     
     return string;
 }
+
+stock Utils_RandomChar()
+{
+    return ((random(1000) % 2) == 0) ? (65 + random(26)) : (97 + random(26));
+}
+
+stock SetPlayerToTargetPos(playerid, targetid)
+{
+    new Float:x, Float:y, Float:z;
+    GetPlayerPos(targetid, x, y, z);
+
+    SetPlayerPos(playerid, x, y, z);
+    SetPlayerInterior(playerid, GetPlayerInterior(targetid));
+    SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(targetid));
+    return 1;
+}

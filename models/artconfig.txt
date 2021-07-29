@@ -1,1 +1,7 @@
 AddSimpleModel(-1, 19480, -2000, "object.dff", "gui.txd");
+AddSimpleModel(-1, 19379, -10001, "maps/laerailtrack1.dff", "maps/railtracklae.txd");
+AddSimpleModel(-1, 19380, -10002, "maps/basket/zchemgrnd_las2.dff", "maps/basket/zchemgrnd_las2.txd");
+
+AddSimpleModel(-1, 17614, -10003, "maps/basket/Lae2_landHUB02.dff", "maps/basket/landhub.txd");
+
+AddSimpleModel(-1, 4873, -10004, "maps/basket/unionstwarc2_LAS.dff", "maps/basket/railway_las.txd");
