@@ -1,6 +1,7 @@
 #include <account>
 #include <config_door>
 #include <config_house>
+#include <helper\config_helper>
 
 #include <YSI_Coding\y_hooks>
 hook OnGameModeInit()
@@ -8,6 +9,7 @@ hook OnGameModeInit()
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `accounts`", "OnAccountLoad");
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `characters`", "OnCharacterLoad");
     mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `doors`", "OnDoorLoad");
+    mysql_tquery(MySQL_GetHandle(), "SELECT * FROM `advisors`", "OnAdvisorLoad");
     return 1;
 }
 
@@ -198,4 +200,33 @@ public OnHouseLoad()
     }
 
     printf("Loaded %d houses from database.", rows);
+}
+
+forward OnAdvisorLoad();
+public OnAdvisorLoad()
+{
+    new rows = cache_num_rows();
+
+    new 
+        name[MAX_PLAYER_NAME + 1],
+        level, count, time, count_load = 0;
+    
+    for(new index = 0; index < rows; index++)
+    {
+        cache_get_value_name(index, "advisorCharName", name, MAX_PLAYER_NAME + 1);
+        cache_get_value_int(index, "advisorLevel", level);
+        cache_get_value_int(index, "advisorCountHelp", count);
+        cache_get_value_int(index, "advisorGetTime", time);
+
+        if(StoredTimeResetHelper == 0)
+        {
+            StoredTimeResetHelper = time;
+        }
+
+        AdvHelper_Create(name, false, count, level, false);
+        count_load++;
+    }
+
+    printf("Loaded %d/%d helpers from database.", count_load, rows);
+    return 1;
 }

@@ -22,30 +22,31 @@ CMD:makeadmin(playerid, params[])
         return Msg(playerid, MSG_PREFIX_ERROR, "Admin Level nay khong hop le, vui long thu lai.");
     }
 
-    new character[E_CHARACTER_MEMORY];
-    if(list_get_arr(characters, character_index[targetid], character))
+    if(GetAdminLevel(targetid) == adminlevel)
     {
-        character[characterAdminLevel] = adminlevel;
-        list_set_arr(characters, character_index[targetid], character);
-
-        new query[64 + 2 + UUID_LEN];
-        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charAdmin` = %d WHERE `charUUID` = '%e'", adminlevel, character[characterUUID]);
-        mysql_tquery(MySQL_GetHandle(), query);
-
-        new string[240];
-
-        format(string, sizeof(string), "Ban vua chinh cap do ban quan tri cua nguoi choi %s la %d.", Account_ReturnName(targetid, 0), adminlevel);
-        SendClientMessage(playerid, COLOR_YELLOW, string);
-
-        format(string, sizeof(string), "Ban vua duoc ban quan tri %s chinh cho cap do quan ban tri la %d.", Account_ReturnName(playerid, 0), adminlevel);
-        SendClientMessage(playerid, COLOR_YELLOW, string);
-
-        format(string, sizeof(string), "Nguoi choi %s [MA: %s] vua chinh cap do ban quan tri cho %s [MA: %s] la %d.", Account_ReturnName(playerid), Account_ReturnMAName(playerid), Account_ReturnName(targetid), Account_ReturnMAName(playerid));
-        printf(string);
-
-        return 1;
+        return Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the dieu chinh duoc thu hang Staff cua nguoi nay.");
     }
 
+    if(GetAdminLevel(targetid) == 1 && adminlevel != 1)
+    {
+        if(adminlevel == 2)
+        {
+            AdvHelper_SetAdvisorLevel(targetid, 2);
+        }
+        else AdvHelper_Remove(Account_ReturnName(targetid));
+    }
+
+    Character_SetAdminLevel(targetid, adminlevel);
+        
+    new string[240];
+    format(string, sizeof(string), "Ban vua chinh cap do ban quan tri cua nguoi choi %s la %d.", Account_ReturnName(targetid, 0), adminlevel);
+    SendClientMessage(playerid, COLOR_YELLOW, string);
+
+    format(string, sizeof(string), "Ban vua duoc ban quan tri %s chinh cho cap do quan ban tri la %d.", Account_ReturnName(playerid, 0), adminlevel);
+    SendClientMessage(targetid, COLOR_YELLOW, string);
+
+    format(string, sizeof(string), "Nguoi choi %s [MA: %s] vua chinh cap do ban quan tri cho %s [MA: %s] la %d.", Account_ReturnName(playerid), Account_ReturnMAName(playerid), Account_ReturnName(targetid), Account_ReturnMAName(playerid), adminlevel);
+    printf(string);
     return 0;
 }
 
@@ -91,7 +92,13 @@ CMD:gotopos(playerid, params[])
 flags:gotoplayer(CMD_FLAG_ADM_REPORTER)
 CMD:gotoplayer(playerid, params[])
 {
-    extract params -> new targetid; else Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /gotoplayer [targetid].");
+    new targetid;
+    if(sscanf(params, "d", targetid))  
+    {
+        Msg(playerid, MSG_PREFIX_USAGE, "SU DUNG: /gotoplayer [targetid].");
+        return 1;
+    }
+
     if(targetid == playerid)
     {
         Msg(playerid, MSG_PREFIX_ERROR, "Ban khong the Tele den chinh ban than cua minh.");

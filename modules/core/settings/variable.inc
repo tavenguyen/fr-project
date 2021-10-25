@@ -5,6 +5,7 @@ new
     PlayerText:MessageTDLine[MAX_PLAYERS][1] = { PlayerText:INVALID_PLAYER_TEXT_DRAW, ...};
 
 new lunarMonth[] = {1, 3, 5, 7, 8, 10, 12};
+new StoredTimeResetHelper = 0;
 
 enum _:MSG_PREFIX
 {
@@ -23,7 +24,7 @@ enum _:AutoToggle
 
 enum
 {
-    E_EXTRA_ID_DOOR    
+    E_EXTRA_ID_DOOR 
 }
 
 enum _:e_Cmds_Flags

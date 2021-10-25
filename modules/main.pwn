@@ -19,6 +19,8 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <a_mysql>
 
 #include <PawnPlus>
+#define         USE_PAWN_PLUS
+
 #include <async-dialogs>
 
 #include <uuid>
@@ -46,23 +48,64 @@ native SendClientMessageStr(playerid, color, AmxString:string) = SendClientMessa
 #include <map>
 
 //---------------------------------- Modules ----------------------------------//
-#include <circleloading>
+#include <circleloading>    
 #include <fadescreen>
 
 #include <account>
 
+// Advisor
 #include <admin\admin_function>
 #include <admin\admin_cmd>
+#include <helper\config_helper>
+#include <helper\main_helper>
 
+// Door, House, Business
 #include <config_house>
 #include <main_house>
-
 #include <config_door>
 #include <player_cmd>
-
 #include <main_door>
 
+#include <panels\panel>
+#include <panels\config_furniture_panel>
+#include <textures\alltextures>
+#include <textures\tex_function>
+
+// Player
+#include <walking_styles>   
+
+#include <suggestion_cmd>
+
 main(){}
+
+stock String_GetTest(const string[], index2)
+{
+    new 
+        count = 0, first_pos = 0, end_pos = 0, str[50],
+        List:l_stored = list_new();
+
+    for(new index = 0; index < strlen(string); index++)
+    {
+        if(string[index] == '/')
+        {
+            count++;
+            list_add(l_stored, index);
+        }
+    }
+    
+    list_add(l_stored, strlen(string));
+    
+    first_pos = (index2 != 0) ? list_get(l_stored, index2 - 1) + 1 : 0;
+    end_pos = list_get(l_stored, index2);
+
+    for(new index = first_pos, count_element = 0; index < end_pos; index++, count_element++)
+    {
+        str[count_element] += string[index];
+    }
+
+    list_delete_deep(l_stored);
+    return str;
+}
 
 public OnGameModeInit()
 {
@@ -79,28 +122,4 @@ public OnGameModeInit()
     return 1;
 }
 
-public OnPlayerCommandReceived(playerid, cmd[], params[], flags)
-{
-    if(PlayerIsConnected(playerid) == false) 
-    {
-        return Msg(playerid, MSG_PREFIX_ERROR, "Ban chua dang nhap vao may chu.");
-    }
-    else if(GetPermissionLevel(playerid) < flags && flags != 0)
-    {
-        Msg(playerid, MSG_PREFIX_ERROR, "Ban khong co quyen de thuc hien dieu nay.");
-        return 0;
-    }
 
-    return 1;
-}
-
-public OnPlayerCommandPerformed(playerid, cmd[], params[], result, flags)
-{
-    if (result == -1)
-    {
-        Msg(playerid, MSG_PREFIX_ERROR, "Lenh nay khong ton tai, vui long thu lai hoac ban co the /trogiup de tim kiem lenh.");
-        return 0;
-    }
-
-    return 1;
-}

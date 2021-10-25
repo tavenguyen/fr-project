@@ -95,7 +95,11 @@
 			"modules/core/command",
 			"modules/core/staff",
 			"modules/core/doors",
-			"modules/core/houses"
+			"modules/core/houses",
+			"modules/core/business",
+			"modules/core/player",
+			"modules/core/vehicles",
+			"modules/core/furniture"
 		],
 		"constants": {
 			"MAX_PLAYERS": "100",

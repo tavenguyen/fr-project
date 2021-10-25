@@ -289,21 +289,30 @@ Door_UpdatePlayersInDoor(playerid, doorid)
     return 1;
 }
 
+forward bool:IsHelperInSQL(const name[]);
 stock Character_SetAdminLevel(playerid, level)
 {
     new character[E_CHARACTER_MEMORY];
     if(list_get_arr_safe(characters, character_index[playerid], character))
     {
         list_set_cell(characters, character_index[playerid], characterAdminLevel, level);
+
+        new name[MAX_PLAYER_NAME];
+        format(name, MAX_PLAYER_NAME, "%s", Account_ReturnName(playerid, 1));
+
+        AdvHelper_Remove(name);
         switch(level)
         {
             case 0: 
-            {
+            {   
                 character[characterPermission] = 0;
             }
             case 1:
             {   
                 character[characterPermission] = CMD_FLAG_HELPER;
+
+                AdvHelper_Create(name, false, 0, 1, true);
+                print("Created helper to database.");
             }
             case 2:
             {
@@ -339,8 +348,11 @@ stock Character_SetAdminLevel(playerid, level)
             }
         }
 
-        printf("[debug] Permission of %s is %d", Account_ReturnName(playerid, 0), character[characterPermission]);
         list_set_cell(characters, character_index[playerid], characterPermission, character[characterPermission]);
+
+        new query[64 + 2 + UUID_LEN];
+        mysql_format(MySQL_GetHandle(), query, sizeof(query), "UPDATE `characters` SET `charAdmin` = %d WHERE `charUUID` = '%e'", level, character[characterUUID]);
+        mysql_tquery(MySQL_GetHandle(), query);
     }
 
     return 1;

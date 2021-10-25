@@ -1,4 +1,6 @@
 AddSimpleModel(-1, 19480, -2000, "object.dff", "gui.txd");
+AddSimpleModel(-1, 19480, -2001, "object.dff", "Panels.txd");
+AddSimpleModel(-1, 19480, -2003, "object.dff", "gui2.txd");
 AddSimpleModel(-1, 19379, -10001, "maps/laerailtrack1.dff", "maps/railtracklae.txd");
 AddSimpleModel(-1, 19380, -10002, "maps/basket/zchemgrnd_las2.dff", "maps/basket/zchemgrnd_las2.txd");
 

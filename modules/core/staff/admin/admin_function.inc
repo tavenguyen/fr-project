@@ -43,7 +43,7 @@ stock GetStaffName(flags)
         }
         case CMD_FLAG_ADM_SENIOR:
         {
-            fomart(staff_name, sizeof(staff_name), "Senior Admin");
+            format(staff_name, sizeof(staff_name), "Senior Admin");
         }
         case CMD_FLAG_ADM_HEAD:
         {
@@ -60,4 +60,50 @@ stock GetStaffName(flags)
     }
     
     return staff_name;
+}
+
+stock bool:GetAdminDuty(playerid)
+{
+    new character[E_CHARACTER_MEMORY];
+    if(list_get_arr_safe(characters, character_index[playerid], character))
+    {
+        if(character[isAdminOnduty])
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
+}
+
+stock bool:IsAdminDuty()
+{
+    new character[E_CHARACTER_MEMORY];
+    foreach(new playerid : Player)
+    {
+        if(list_get_arr_safe(characters, character_index[playerid], character))
+        {
+            if(character[isAdminOnduty] == true)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+stock SendMessageToAllStaff(const message[])
+{
+    foreach(new playerid : Player)
+    {
+        if(GetPermissionLevel(playerid) >= 1)
+        {
+            SendClientMessage(playerid, COLOR_RED, message);
+        }
+    }
+
+    return 1;
 }
